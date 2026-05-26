@@ -5,16 +5,17 @@ export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Ensure currentPath is always a valid string
+  // Ensure currentPath is always a valid string for route matching
   const currentPath = location && location.pathname ? location.pathname : '/';
   const isActive = (path) => currentPath === path;
 
+  // Handle user logout and clear authentication token
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
-  // Safely format the page title without crashing
+  // Dynamically format the page title based on the current route path
   let pageTitle = 'Dashboard';
   if (currentPath.length > 1) {
     pageTitle = currentPath.substring(1).split('-').join(' ');
@@ -23,8 +24,10 @@ export default function Layout({ children }) {
   return (
     <div className="flex h-screen bg-slate-50 font-['Public_Sans'] overflow-hidden">
       
+      {/* Sidebar Container */}
       <aside className="w-64 bg-slate-900 text-white flex flex-col hidden md:flex h-full border-r border-slate-800">
         
+        {/* Application Logo */}
         <div className="p-6 border-b border-slate-800">
           <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
             <span className="bg-blue-600 p-1.5 rounded-lg shadow-lg shadow-blue-600/30">
@@ -34,7 +37,8 @@ export default function Layout({ children }) {
           </h1>
         </div>
         
-        <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto custom-scrollbar">
+        {/* Navigation Menu with Custom Scrollbar Styling */}
+        <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-600">
           
           <Link 
             to="/dashboard" 
@@ -44,6 +48,7 @@ export default function Layout({ children }) {
             Dashboard
           </Link>
 
+          {/* Sales & POS Module */}
           <div>
             <p className="px-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4">Sales & POS</p>
             <div className="space-y-1">
@@ -58,6 +63,7 @@ export default function Layout({ children }) {
             </div>
           </div>
 
+          {/* Inventory Module */}
           <div>
             <p className="px-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4">Inventory</p>
             <div className="space-y-1">
@@ -80,6 +86,7 @@ export default function Layout({ children }) {
             </div>
           </div>
 
+          {/* Administration Module */}
           <div>
             <p className="px-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4">Administration</p>
             <div className="space-y-1">
@@ -98,6 +105,7 @@ export default function Layout({ children }) {
             </div>
           </div>
 
+          {/* System Settings Module */}
           <div>
             <p className="px-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4">System</p>
             <div className="space-y-1">
@@ -110,6 +118,7 @@ export default function Layout({ children }) {
 
         </nav>
 
+        {/* Footer Actions */}
         <div className="p-4 border-t border-slate-800">
           <button 
             onClick={handleLogout}
@@ -121,8 +130,10 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
+      {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto relative">
         
+        {/* Dynamic Header (Hidden on Subscription page) */}
         {!isActive('/subscription') && (
           <header className="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
             <h2 className="text-lg font-bold text-slate-800 capitalize">
@@ -137,6 +148,7 @@ export default function Layout({ children }) {
           </header>
         )}
         
+        {/* Inject Page Content */}
         {children}
       </main>
       

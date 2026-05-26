@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import DataTable from '../components/DataTable';
 import SearchFilter from '../components/SearchFilter';
 import Modal from '../components/Modal';
-import { request } from '../util/request'; // ប្រើ Path ត្រឹមត្រូវ
+import { request } from '../util/request'; 
 
 export default function Branch() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,7 +15,7 @@ export default function Branch() {
 
   const [branches, setBranches] = useState([]);
 
-  // 1. បន្ថែម formData ដើម្បីចាប់យកទិន្នន័យពី Form
+  // បន្ថែម formData ដើម្បីចាប់យកទិន្នន័យពី Form
   const [formData, setFormData] = useState({
     name: '',
     location: '',

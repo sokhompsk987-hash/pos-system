@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* បន្ទាត់នេះប្រាប់ឱ្យ Tailwind v4 មកអានពណ៌ក្នុង config.js របស់ Smos */
 @config "../tailwind.config.js";
 
 @layer base {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { request } from '../../util/request';
+// import Layout from '../../components/Layout.jsx'; 
 
 export default function StockMovement() {
   const [movements, setMovements] = useState([]);
@@ -15,6 +16,20 @@ export default function StockMovement() {
     notes: ''
   });
 
+  // Types database 
+  const movementTypes = [
+    'All',
+    'purchase', 
+    'sale', 
+    'transfer_in', 
+    'transfer_out', 
+    'adjustment_in', 
+    'adjustment_out', 
+    'return_to_supplier', 
+    'return_from_customer', 
+    'damage'
+  ];
+
   // Mock lists for the dropdowns (In a real app, these come from API)
   const branches = ["Toul Kork Branch", "BKK Branch", "Main Warehouse"];
   const products = [
@@ -22,15 +37,15 @@ export default function StockMovement() {
     { id: 2, name: "iPhone 15 Pro Max" }
   ];
 
+  // បន្ថែម filterType ទៅក្នុង useEffect ដើម្បីឱ្យវាទាញទិន្នន័យរាល់ពេលយើងប្តូរ Dropdown
   useEffect(() => {
     fetchMovements();
-  }, []);
+  }, [filterType]);
 
   const fetchMovements = () => {
-    // We can pass params if we want to filter on the backend side
     let url = 'stock-movements';
     if (filterType !== 'All') {
-      url += `?type=${filterType.toLowerCase()}`;
+      url += `?type=${filterType}`; // Backend expects the exact string
     }
 
     request(url, 'GET')
@@ -47,18 +62,15 @@ export default function StockMovement() {
       });
   };
 
-  // Re-fetch when filter changes if we do backend filtering
-  // Or just filter frontend array (doing frontend filter below for demo)
-
   const setFallbackMovements = () => {
     setMovements([
       { 
         id: 1, 
         product_name: "Galaxy Book 4", 
         branch: "Toul Kork Branch", 
-        type: "Adjustment", 
+        type: "purchase", 
         quantity_changed: 5, 
-        reason: "New Arrival",
+        reason: "New Arrival from Supplier",
         user: "Admin",
         created_at: "2026-05-24 10:30 AM"
       },
@@ -66,7 +78,7 @@ export default function StockMovement() {
         id: 2, 
         product_name: "iPhone 15 Pro Max", 
         branch: "BKK Branch", 
-        type: "Transfer", 
+        type: "transfer_out", 
         quantity_changed: -2, 
         reason: "Sent to Toul Kork",
         user: "Manager Sok",
@@ -76,20 +88,50 @@ export default function StockMovement() {
         id: 3, 
         product_name: "MacBook Air M3", 
         branch: "Main Warehouse", 
-        type: "Adjustment", 
+        type: "damage", 
         quantity_changed: -1, 
-        reason: "Damaged Item",
+        reason: "Screen cracked in warehouse",
         user: "Admin",
         created_at: "2026-05-22 09:00 AM"
+      },
+      { 
+        id: 4, 
+        product_name: "AirPods Pro 2", 
+        branch: "Toul Kork Branch", 
+        type: "return_from_customer", 
+        quantity_changed: 1, 
+        reason: "Customer changed mind",
+        user: "Cashier Lina",
+        created_at: "2026-05-21 14:00 PM"
       }
     ]);
   };
 
-  // Frontend filtering logic
+  // Frontend filtering logic (In case backend doesn't filter it)
   const filteredMovements = movements.filter(m => {
     if (filterType === 'All') return true;
-    return m.type.toLowerCase() === filterType.toLowerCase();
+    return m.type === filterType;
   });
+
+  // មុខងារសម្រាប់ប្តូរអក្សរឱ្យស្អាត (ឧទាហរណ៍: transfer_in -> Transfer In)
+  const formatTypeText = (type) => {
+    if (type === 'All') return 'All Types';
+    return type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
+  // មុខងារសម្រាប់កំណត់ពណ៌តាមប្រភេទ (កើនស្តុកពណ៌បៃតង, ថយស្តុកពណ៌ខៀវ, ខូចខាតពណ៌ក្រហម)
+  const getTypeBadgeColor = (type) => {
+    if (['purchase', 'transfer_in', 'adjustment_in', 'return_from_customer'].includes(type)) {
+      return 'bg-green-100 text-green-700';
+    }
+    if (['sale', 'transfer_out', 'adjustment_out', 'return_to_supplier'].includes(type)) {
+      return 'bg-blue-100 text-blue-700';
+    }
+    if (type === 'damage') {
+      return 'bg-red-100 text-red-700';
+    }
+    return 'bg-slate-100 text-slate-700';
+  };
 
   const handleTransferSubmit = (e) => {
     e.preventDefault();
@@ -103,13 +145,12 @@ export default function StockMovement() {
       notes: transferForm.notes
     };
 
-    // Make the POST request to the endpoint shown in the Postman 
     request('stock-movements/transfer', 'POST', payload)
       .then(res => {
         console.log("Transfer successful:", res);
         setIsTransferModalOpen(false);
         setTransferForm({ product_id: '', from_branch_id: '', to_branch_id: '', quantity: '', notes: '' });
-        fetchMovements(); // Refresh the list
+        fetchMovements(); 
       })
       .catch(err => console.log("Error transferring stock:", err));
   };
@@ -136,19 +177,22 @@ export default function StockMovement() {
       {/* Main Content Box */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         
-        {/* Filter Bar */}
-        <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
-          <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">Filter By:</p>
-          <div className="flex gap-2 bg-slate-200/50 p-1 rounded-lg">
-            {['All', 'Transfer', 'Adjustment'].map(type => (
-              <button 
-                key={type}
-                onClick={() => setFilterType(type)}
-                className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${filterType === type ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                {type}
-              </button>
-            ))}
+        {/* Dropdown Filter Bar */}
+        <div className="p-4 border-b border-slate-100 bg-slate-50 flex flex-col md:flex-row md:items-center gap-4">
+          <p className="text-sm font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Filter By Movement Type:</p>
+          <div className="relative w-full md:w-64">
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-600 outline-none appearance-none cursor-pointer transition-all shadow-sm"
+            >
+              {movementTypes.map(type => (
+                <option key={type} value={type}>
+                  {formatTypeText(type)}
+                </option>
+              ))}
+            </select>
+            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
           </div>
         </div>
 
@@ -177,8 +221,8 @@ export default function StockMovement() {
                       <td className="p-4 font-bold text-slate-900">{move.product_name}</td>
                       <td className="p-4 text-slate-500">{move.branch}</td>
                       <td className="p-4">
-                        <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${move.type.toLowerCase() === 'transfer' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
-                          {move.type}
+                        <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${getTypeBadgeColor(move.type)}`}>
+                          {formatTypeText(move.type)}
                         </span>
                       </td>
                       <td className="p-4">
@@ -213,7 +257,7 @@ export default function StockMovement() {
         </div>
       </div>
 
-      {/* Transfer Stock Modal */}
+      {/* Transfer Stock Modal (រក្សាទុកឱ្យនៅដដែល) */}
       {isTransferModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-lg animate-in fade-in zoom-in-95 duration-200">
@@ -259,7 +303,6 @@ export default function StockMovement() {
                     </select>
                   </div>
                   
-                  {/* Arrow Icon in the middle */}
                   <div className="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-1 shadow-sm border border-slate-100">
                     <span className="material-symbols-outlined text-slate-400 text-lg">arrow_forward</span>
                   </div>
