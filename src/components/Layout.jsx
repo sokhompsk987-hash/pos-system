@@ -1,17 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // State to control the visibility of the logout confirmation dialog
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   // Ensure currentPath is always a valid string for route matching
   const currentPath = location && location.pathname ? location.pathname : '/';
   const isActive = (path) => currentPath === path;
 
-  // Handle user logout and clear authentication token
-  const handleLogout = () => {
+  // Function to actually perform the logout after confirmation
+  const confirmLogout = () => {
     localStorage.removeItem('token');
+    setShowLogoutConfirm(false);
     navigate('/login');
   };
 
@@ -38,8 +42,7 @@ export default function Layout({ children }) {
         </div>
         
         {/* Navigation Menu with Custom Scrollbar Styling */}
-        <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-600">
-          
+       <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/40 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/60">
           <Link 
             to="/dashboard" 
             className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${isActive('/dashboard') ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
@@ -121,7 +124,7 @@ export default function Layout({ children }) {
         {/* Footer Actions */}
         <div className="p-4 border-t border-slate-800">
           <button 
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors"
           >
             <span className="material-symbols-outlined">logout</span>
@@ -151,6 +154,35 @@ export default function Layout({ children }) {
         {/* Inject Page Content */}
         {children}
       </main>
+
+      {/* Logout Confirmation Dialog */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-slate-100 p-6 text-center">
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-red-50 text-red-500 rounded-full mb-4">
+              <span className="material-symbols-outlined text-[32px]">logout</span>
+            </div>
+            <h3 className="text-lg font-black text-slate-900 mb-1">Confirm Sign Out</h3>
+            <p className="text-sm font-medium text-slate-500 mb-6 px-2">
+              Are you sure you want to log out of your account?
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm py-3 rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmLogout}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-md shadow-red-600/10"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { request } from '../util/request';
 
 export default function StockManagement() {
@@ -92,11 +93,23 @@ export default function StockManagement() {
   return (
     <div className="p-6 md:p-10 font-['Public_Sans'] bg-slate-50 min-h-screen">
       
-      {/* Header section with page title and branch selection dropdown */}
+      {/* Header section with back button, page title and branch selection dropdown */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Stock Management</h1>
-          <p className="text-slate-500 font-medium mt-1">Monitor inventory levels and make manual stock adjustments</p>
+        
+        <div className="flex items-center gap-4">
+          {/* Back to Dashboard Button */}
+          <Link 
+            to="/dashboard" 
+            className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
+            title="Back to Dashboard"
+          >
+            <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
+          </Link>
+
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Stock Management</h1>
+            <p className="text-slate-500 font-medium mt-1">Monitor inventory levels and make manual stock adjustments</p>
+          </div>
         </div>
         
         <div className="bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm flex items-center gap-2">

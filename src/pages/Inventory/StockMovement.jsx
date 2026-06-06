@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { request } from '../../util/request';
-// import Layout from '../../components/Layout.jsx'; 
 
 export default function StockMovement() {
   const [movements, setMovements] = useState([]);
@@ -160,9 +160,21 @@ export default function StockMovement() {
       
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Stock Movement</h1>
-          <p className="text-slate-500 font-medium mt-1">Track all stock transfers and manual adjustments</p>
+        
+        <div className="flex items-center gap-4">
+          {/* Back to Dashboard Button */}
+          <Link 
+            to="/dashboard" 
+            className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
+            title="Back to Dashboard"
+          >
+            <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
+          </Link>
+
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Stock Movement</h1>
+            <p className="text-slate-500 font-medium mt-1">Track all stock transfers and manual adjustments</p>
+          </div>
         </div>
         
         <button 
@@ -257,9 +269,9 @@ export default function StockMovement() {
         </div>
       </div>
 
-      {/* Transfer Stock Modal (រក្សាទុកឱ្យនៅដដែល) */}
+      {/* Transfer Stock Modal (ផ្ទៃខាងក្រោយមានភាពព្រិលស្អាត) */}
       {isTransferModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-lg animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6 md:p-8">
               <div className="flex justify-between items-center mb-6">
@@ -289,7 +301,7 @@ export default function StockMovement() {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 relative">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[12px] font-bold text-slate-700 uppercase tracking-widest text-red-500">From Branch (Sender)</label>
                     <select 
@@ -303,10 +315,6 @@ export default function StockMovement() {
                     </select>
                   </div>
                   
-                  <div className="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-1 shadow-sm border border-slate-100">
-                    <span className="material-symbols-outlined text-slate-400 text-lg">arrow_forward</span>
-                  </div>
-
                   <div className="space-y-2">
                     <label className="text-[12px] font-bold text-slate-700 uppercase tracking-widest text-green-500">To Branch (Receiver)</label>
                     <select 

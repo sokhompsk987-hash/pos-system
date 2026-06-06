@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
+import { Link } from 'react-router-dom';
 import SearchFilter from '../components/SearchFilter';
 import Modal from '../components/Modal';
 import { request } from '../util/request';
@@ -78,7 +79,19 @@ export default function Category() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Category Management</h1>
+      
+      {/* Header section with back button and page title */}
+      <div className="flex items-center gap-4 mb-6">
+        {/* Back to Dashboard Button */}
+        <Link 
+          to="/dashboard" 
+          className="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
+          title="Back to Dashboard"
+        >
+          <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
+        </Link>
+        <h1 className="text-2xl font-bold">Category Management</h1>
+      </div>
 
       <div className="flex justify-between items-start mb-6">
          <div className="w-1/3">

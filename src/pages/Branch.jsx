@@ -100,7 +100,19 @@ export default function Branch() {
 
   return (
     <div className="p-6 font-['Public_Sans']">
-      <h1 className="text-2xl font-black text-slate-900 mb-6">Branch Management</h1>
+      
+      {/* Header section with back button and page title */}
+      <div className="flex items-center gap-4 mb-6">
+        {/* Back to Dashboard Button */}
+        <Link 
+          to="/dashboard" 
+          className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
+          title="Back to Dashboard"
+        >
+          <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
+        </Link>
+        <h1 className="text-2xl font-black text-slate-900">Branch Management</h1>
+      </div>
 
       <div className="flex justify-between items-start mb-6">
          <div className="w-1/3">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { request } from '../util/request';
 
 export default function Products() {
@@ -103,16 +104,28 @@ export default function Products() {
   return (
     <div className="p-6 md:p-10 font-['Public_Sans'] bg-slate-50 min-h-screen">
       
-      {/* Header section with Title and Add Button */}
+      {/* Header section with Back Button, Title and Add Button */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Products List</h1>
-          <p className="text-slate-500 font-medium mt-1">Manage your store inventory, pricing, and images</p>
+        
+        <div className="flex items-center gap-4">
+          {/* Back to Dashboard Button */}
+          <Link 
+            to="/dashboard" 
+            className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
+            title="Back to Dashboard"
+          >
+            <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
+          </Link>
+
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Products List</h1>
+            <p className="text-slate-500 font-medium mt-1">Manage your store inventory, pricing, and images</p>
+          </div>
         </div>
         
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all flex items-center gap-2 shrink-0"
         >
           <span className="material-symbols-outlined text-sm">add</span>
           Add New Product
@@ -196,8 +209,15 @@ export default function Products() {
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6 md:p-8">
+              
+              {/* Added the matching header styling here */}
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-black text-slate-900">Add New Product</h2>
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 p-2 rounded-xl">
+                    <span className="material-symbols-outlined text-blue-600">inventory_2</span>
+                  </div>
+                  <h2 className="text-2xl font-black text-slate-900">Add New Product</h2>
+                </div>
                 <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-colors">
                   <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
