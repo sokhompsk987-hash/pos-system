@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout.jsx';
 import { request } from '../../util/request';
 
@@ -114,6 +115,16 @@ export default function POS() {
           
           {/* Top Bar: Search and Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            
+            {/* Added Back to Dashboard Button here */}
+            <Link 
+              to="/dashboard" 
+              className="w-[42px] h-[42px] bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
+              title="Back to Dashboard"
+            >
+              <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
+            </Link>
+
             <div className="relative flex-1">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
               <input 

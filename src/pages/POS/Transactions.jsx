@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { request } from '../../util/request';
 // import Layout from '../components/Layout.jsx'; // Ensure Layout is imported if needed
 
@@ -65,10 +66,22 @@ export default function Transactions() {
       
       {/* Page Header Area */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900">Transactions & Invoices</h1>
-          <p className="text-sm font-medium text-slate-500 mt-1">View and manage all sales history and receipts</p>
+        
+        {/* Added Back Button here */}
+        <div className="flex items-center gap-4">
+          <Link 
+            to="/dashboard" 
+            className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
+            title="Back to Dashboard"
+          >
+            <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900">Transactions & Invoices</h1>
+            <p className="text-sm font-medium text-slate-500 mt-1">View and manage all sales history and receipts</p>
+          </div>
         </div>
+
         <button className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">download</span>
           Export Report
