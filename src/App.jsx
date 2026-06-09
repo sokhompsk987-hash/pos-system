@@ -8,10 +8,9 @@ import Category from './pages/Category.jsx';
 import Branch from './pages/Branch.jsx';
 import Products from './pages/Products.jsx'; 
 import StockManagement from './pages/StockManagement.jsx';
-
 import StockMovement from './pages/Inventory/StockMovement.jsx';
 import Subscription from './pages/Billing/Subscription.jsx';
-
+import Users from './pages/Users.jsx';
 // Import the newly created POS and Transactions pages
 import POS from './pages/POS/POS.jsx';
 import Transactions from './pages/POS/Transactions.jsx';
@@ -30,7 +29,7 @@ function App() {
         <Route path="/branch" element={<Branch />} />
         <Route path="/stock-movement" element={<StockMovement />} />
         <Route path="/subscription" element={<Subscription />} />
-        
+        <Route path="/users" element={<Users />} />
         <Route path="/inventory" element={<StockManagement />} />
         
         {/* Routes for the Sales & POS module */}
