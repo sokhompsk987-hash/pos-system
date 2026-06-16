@@ -40,14 +40,27 @@ export default function POS() {
   };
 
   const setFallbackProducts = () => {
+    // Added mock image URLs to simulated data to test visualization
     setProducts([
-      { id: 1, name: 'Baby Milk Powder', price: 25.00, category: 'Milk', code: 'P001', stock: 15 },
-      { id: 2, name: 'Baby Wipes (80 pcs)', price: 3.50, category: 'Wipes', code: 'P002', stock: 42 },
-      { id: 3, name: 'Newborn Diapers M Size', price: 18.00, category: 'Diapers', code: 'P003', stock: 20 },
-      { id: 4, name: 'Baby Shampoo 200ml', price: 6.20, category: 'Bath', code: 'P004', stock: 8 },
-      { id: 5, name: 'Feeding Bottle 250ml', price: 8.50, category: 'Accessories', code: 'P005', stock: 12 },
-      { id: 6, name: 'Baby Cotton Onesie', price: 12.00, category: 'Clothing', code: 'P006', stock: 5 }
+      { id: 1, name: 'Baby Milk Powder', price: 25.00, category: 'Milk', code: 'P001', stock: 15, image: '' },
+      { id: 2, name: 'Baby Wipes (80 pcs)', price: 3.50, category: 'Wipes', code: 'P002', stock: 42, image: '' },
+      { id: 3, name: 'Newborn Diapers M Size', price: 18.00, category: 'Diapers', code: 'P003', stock: 20, image: '' },
+      { id: 4, name: 'Baby Shampoo 200ml', price: 6.20, category: 'Bath', code: 'P004', stock: 8, image: '' },
+      { id: 5, name: 'Feeding Bottle 250ml', price: 8.50, category: 'Accessories', code: 'P005', stock: 12, image: '' },
+      { id: 6, name: 'Baby Cotton Onesie', price: 12.00, category: 'Clothing', code: 'P006', stock: 5, image: '' }
     ]);
+  };
+
+  // Helper function to return fallback icons and background colors based on category
+  const getCategoryFallback = (category) => {
+    switch (category) {
+      case 'Milk': return { icon: 'baby_changing_station', bg: 'bg-blue-50 text-blue-500' };
+      case 'Diapers': return { icon: 'child_care', bg: 'bg-teal-50 text-teal-500' };
+      case 'Wipes': return { icon: 'clean_hands', bg: 'bg-indigo-50 text-indigo-500' };
+      case 'Bath': return { icon: 'bathtub', bg: 'bg-cyan-50 text-cyan-500' };
+      case 'Accessories': return { icon: 'toys', bg: 'bg-amber-50 text-amber-500' };
+      default: return { icon: 'stroller', bg: 'bg-pink-50 text-pink-500' };
+    }
   };
 
   // Cart operations: Add, update item quantity, or remove item
@@ -108,15 +121,15 @@ export default function POS() {
 
   return (
     <Layout>
-      <div className="flex h-[calc(100vh-64px)] bg-slate-100 font-['Public_Sans'] overflow-hidden">
+      <div className="flex h-[calc(100vh-89px)] bg-slate-100 font-sans overflow-hidden">
         
         {/* Left Side: Product Selection Grid */}
         <div className="flex-1 p-6 overflow-y-auto flex flex-col min-w-0">
           
           {/* Top Bar: Search and Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6 shrink-0">
             
-            {/* Added Back to Dashboard Button here */}
+            {/* Back to Dashboard Button */}
             <Link 
               to="/dashboard" 
               className="w-[42px] h-[42px] bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
@@ -135,7 +148,7 @@ export default function POS() {
                 className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-600 outline-none transition-all"
               />
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 max-w-full whitespace-nowrap">
+            <div className="flex gap-2 overflow-x-auto pb-1 max-w-full whitespace-nowrap [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full">
               {['All', 'Milk', 'Diapers', 'Wipes', 'Bath', 'Accessories'].map(cat => (
                 <button
                   key={cat}
@@ -149,30 +162,55 @@ export default function POS() {
           </div>
 
           {/* Product Cards Layout */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-1">
-            {filteredProducts.map(product => (
-              <div 
-                key={product.id} 
-                onClick={() => addToCart(product)}
-                className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer flex flex-col justify-between group"
-              >
-                <div>
-                  <div className="text-xs font-medium text-slate-400 mb-1">#{product.code}</div>
-                  <h3 className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2">{product.name}</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-1 flex-1">
+            {filteredProducts.map(product => {
+              const fallback = getCategoryFallback(product.category);
+              return (
+                <div 
+                  key={product.id} 
+                  onClick={() => addToCart(product)}
+                  className="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer flex flex-col justify-between group overflow-hidden"
+                >
+                  {/* Product Visual Container (Image or Fallback) */}
+                  <div className="w-full h-32 rounded-xl overflow-hidden mb-3 bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 relative">
+                    {product.image ? (
+                      <img 
+                        src={product.image} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className={`w-full h-full flex flex-col items-center justify-center ${fallback.bg} gap-1 group-hover:scale-105 transition-transform duration-300`}>
+                        <span className="material-symbols-outlined text-[32px]">{fallback.icon}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">{product.category}</span>
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 bg-slate-900/60 backdrop-blur-sm text-white font-mono text-[9px] px-1.5 py-0.5 rounded-md">
+                      #{product.code}
+                    </div>
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="flex-1 flex flex-col justify-between">
+                    <h3 className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[32px]">
+                      {product.name}
+                    </h3>
+                    
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
+                      <span className="text-sm font-black text-slate-900">${product.price.toFixed(2)}</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${product.stock > 10 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                        Qty: {product.stock}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between mt-4 pt-2 border-t border-slate-50">
-                  <span className="text-base font-black text-slate-900">${product.price.toFixed(2)}</span>
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${product.stock > 10 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
-                    Qty: {product.stock}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Right Side: Current Checkout Bill (Cart Panel) */}
-        <div className="w-[400px] bg-white border-l border-slate-200 flex flex-col h-full shadow-xl">
+        <div className="w-[400px] bg-white border-l border-slate-200 flex flex-col h-full shadow-xl shrink-0">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
             <h2 className="text-base font-black text-slate-800 flex items-center gap-2">
               <span className="material-symbols-outlined text-blue-600 text-[20px]">shopping_basket</span>
@@ -208,7 +246,7 @@ export default function POS() {
           </div>
 
           {/* Bill Pricing Formulations */}
-          <div className="p-4 border-t border-slate-100 bg-slate-50/50 space-y-3">
+          <div className="p-4 border-t border-slate-100 bg-slate-50/50 space-y-3 shrink-0">
             <div className="flex justify-between text-xs font-bold text-slate-500">
               <span>Subtotal</span>
               <span>${subtotal.toFixed(2)}</span>
@@ -242,9 +280,7 @@ export default function POS() {
           </div>
         </div>
 
-        {/* ========================================================= */}
         {/* MODAL 1: STEP-IN PAYMENT DIALOG */}
-        {/* ========================================================= */}
         {showPaymentModal && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100">
@@ -305,9 +341,7 @@ export default function POS() {
           </div>
         )}
 
-        {/* ========================================================= */}
         {/* MODAL 2: PRINTABLE CUSTOM RECEIPT SLIP */}
-        {/* ========================================================= */}
         {showReceiptModal && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-100">

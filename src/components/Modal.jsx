@@ -1,7 +1,6 @@
 import React from 'react';
 
 export default function Modal({ isOpen, onClose, title, children }) {
-  // បើ isOpen ស្មើ false គឺមិនបាច់បង្ហាញផ្ទាំងនេះទេ
   if (!isOpen) return null;
 
   return (
@@ -22,7 +21,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
           </div>
         )}
         
-        {/* ផ្នែកសាច់រឿងខាងក្នុង (Body) ដែលយើងអាចដាក់អីក៏បាន */}
+        {/* ផ្នែកខាងក្នុង (Body) ដែលយើងអាចដាក់អីក៏បាន */}
         <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto">
           {children}
         </div>

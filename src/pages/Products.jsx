@@ -8,6 +8,10 @@ export default function Products() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
+  // NEW: State variables for the Product Details Modal
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  
   // Set up form state to match the backend payload exactly
   const [formData, setFormData] = useState({
     product_name: '',
@@ -95,6 +99,12 @@ export default function Products() {
       .catch(err => console.log("Error saving product:", err));
   };
 
+  // NEW: Function to open the details modal
+  const handleViewDetails = (product) => {
+    setSelectedProduct(product);
+    setIsDetailModalOpen(true);
+  };
+
   // Filter products based on the search term (by name or code)
   const filteredProducts = products.filter(p => 
     p?.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -167,7 +177,12 @@ export default function Products() {
                   <tr key={product?.product_id || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                     <td className="p-4 pl-6 text-slate-400">{product?.product_code || '---'}</td>
                     <td className="p-4">
-                      <div className="flex items-center gap-3">
+                      {/* NEW: Added onClick and cursor-pointer to this div */}
+                      <div 
+                        className="flex items-center gap-3 cursor-pointer hover:bg-slate-100 p-2 rounded-lg transition-colors w-fit"
+                        onClick={() => handleViewDetails(product)}
+                        title="Click to view details"
+                      >
                         {/* Display image if it exists, otherwise show placeholder */}
                         {product?.image_url ? (
                            <img src={`http://localhost:8000${product.image_url}`} alt="product" className="w-10 h-10 rounded-lg object-cover border border-slate-200"/>
@@ -176,7 +191,7 @@ export default function Products() {
                              <span className="material-symbols-outlined text-slate-400 text-[18px]">image</span>
                            </div>
                         )}
-                        <span className="text-slate-900 font-bold">{product?.product_name || 'Unknown'}</span>
+                        <span className="text-slate-900 font-bold hover:text-blue-600">{product?.product_name || 'Unknown'}</span>
                       </div>
                     </td>
                     <td className="p-4 text-slate-500">${product?.cost_price || '0.00'}</td>
@@ -210,7 +225,6 @@ export default function Products() {
           <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6 md:p-8">
               
-              {/* Added the matching header styling here */}
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
                   <div className="bg-blue-100 p-2 rounded-xl">
@@ -276,6 +290,65 @@ export default function Products() {
           </div>
         </div>
       )}
+
+      {/* NEW: Product Details Modal */}
+      {isDetailModalOpen && selectedProduct && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            
+            {/* Header Image Area */}
+            <div className="h-48 bg-slate-100 relative border-b border-slate-200 flex justify-center items-center overflow-hidden">
+              {selectedProduct?.image_url ? (
+                <img src={`http://localhost:8000${selectedProduct.image_url}`} alt="product detail" className="w-full h-full object-cover" />
+              ) : (
+                <span className="material-symbols-outlined text-7xl text-slate-300">image</span>
+              )}
+              <button 
+                onClick={() => setIsDetailModalOpen(false)} 
+                className="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-700 p-2 rounded-full backdrop-blur-md transition-all shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Details Area */}
+            <div className="p-6 md:p-8">
+              <div className="mb-6">
+                <p className="text-slate-400 font-bold text-sm mb-1">{selectedProduct?.product_code || 'No Code'}</p>
+                <h2 className="text-2xl font-black text-slate-900">{selectedProduct?.product_name || 'Unknown Product'}</h2>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sell Price</p>
+                  <p className="text-xl font-black text-blue-600">${selectedProduct?.base_price || '0.00'}</p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">In Stock</p>
+                  <p className={`text-xl font-black ${selectedProduct?.stock_quantity > 10 ? 'text-green-600' : 'text-orange-600'}`}>
+                    {selectedProduct?.stock_quantity || '0'} Units
+                  </p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 col-span-2">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Description</p>
+                  <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                    {selectedProduct?.description || 'No description available for this product.'}
+                  </p>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setIsDetailModalOpen(false)}
+                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition-colors"
+              >
+                Close Details
+              </button>
+            </div>
+            
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
