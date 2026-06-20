@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { request } from '../../util/request';
-// import Layout from '../components/Layout.jsx'; // Ensure Layout is imported if needed
 
 export default function Transactions() {
   // State to hold the list of transactions
   const [transactions, setTransactions] = useState([]);
+  
   // State for the search input field
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // State to control the visibility of the export dropdown menu
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   // Fetch initial data when the component mounts
   useEffect(() => {
@@ -61,13 +64,38 @@ export default function Transactions() {
     t.customer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Handle the export functionality based on the selected format type
+  const handleExport = (type) => {
+    setShowExportMenu(false);
+    
+    if (type === 'CSV') {
+      // Basic implementation for CSV export
+      let csvContent = "data:text/csv;charset=utf-8,Invoice ID,Date & Time,Customer,Payment Method,Total Amount,Status\n";
+      
+      filteredTransactions.forEach(t => {
+        csvContent += `${t.id},${t.date},${t.customer},${t.method},${t.total},${t.status}\n`;
+      });
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "transactions_report.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // Placeholder for Excel and PDF export (Backend team can integrate specific libraries here)
+      alert(`Preparing ${type} file...\nThe backend team can connect the ${type} generation logic to this button.`);
+    }
+  };
+
   return (
-    <div className="p-6 md:p-10 max-w-[1400px] mx-auto font-['Public_Sans'] bg-slate-50 min-h-screen">
+    <div className="p-6 md:p-10 max-w-[1400px] mx-auto font-sans bg-slate-50 min-h-screen">
       
       {/* Page Header Area */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         
-        {/* Added Back Button here */}
+        {/* Back Button and Title */}
         <div className="flex items-center gap-4">
           <Link 
             to="/dashboard" 
@@ -82,10 +110,46 @@ export default function Transactions() {
           </div>
         </div>
 
-        <button className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">download</span>
-          Export Report
-        </button>
+        {/* Export Report Dropdown */}
+        <div className="relative">
+          <button 
+            onClick={() => setShowExportMenu(!showExportMenu)}
+            className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">download</span>
+            Export Report
+            <span className="material-symbols-outlined text-[18px]">
+              {showExportMenu ? 'expand_less' : 'expand_more'}
+            </span>
+          </button>
+
+          {/* Dropdown Menu Options */}
+          {showExportMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-10 animate-fadeIn">
+              <button 
+                onClick={() => handleExport('CSV')} 
+                className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 border-b border-slate-100 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px] text-green-600">description</span>
+                Export as CSV
+              </button>
+              <button 
+                onClick={() => handleExport('Excel')} 
+                className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 border-b border-slate-100 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px] text-emerald-600">table_view</span>
+                Export as Excel
+              </button>
+              <button 
+                onClick={() => handleExport('PDF')} 
+                className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px] text-red-500">picture_as_pdf</span>
+                Export as PDF
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Search and Filter Bar */}
