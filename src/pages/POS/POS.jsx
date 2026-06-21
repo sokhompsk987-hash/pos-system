@@ -161,8 +161,8 @@ export default function POS() {
             </div>
           </div>
 
-          {/* Product Cards Layout */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-1 flex-1">
+          {/* Product Cards Layout - Added 'content-start' to fix vertical stretching */}
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-1 flex-1 content-start">
             {filteredProducts.map(product => {
               const fallback = getCategoryFallback(product.category);
               return (
