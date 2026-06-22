@@ -11,7 +11,7 @@ export default function Layout({ children }) {
   // State to control sidebar collapse/expand on Desktop
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // NEW: State to control sidebar open/close on Mobile devices
+  // State to control sidebar open/close on Mobile devices
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // State to control the profile dropdown menu
@@ -22,7 +22,12 @@ export default function Layout({ children }) {
 
   // Ensure currentPath is always a valid string for route matching
   const currentPath = location && location.pathname ? location.pathname : '/';
-  const isActive = (path) => currentPath === path;
+  
+  // Update: Make Transactions button stay active when viewing an Invoice
+  const isActive = (path) => {
+    if (path === '/transactions' && currentPath.includes('/pos/invoice')) return true;
+    return currentPath === path;
+  };
 
   // Function to perform the logout action after user confirmation
   const confirmLogout = () => {
@@ -40,10 +45,12 @@ export default function Layout({ children }) {
     setIsMobileMenuOpen(false);
   };
 
-  // Dynamically format the page title based on the current route path
+  // Update: Dynamically format the page title, including the new Invoice Details page
   let pageTitle = 'Dashboard';
-  if (currentPath.length > 1) {
-    pageTitle = currentPath.substring(1).split('-').join(' ');
+  if (currentPath.includes('/pos/invoice')) {
+    pageTitle = 'Invoice Details';
+  } else if (currentPath.length > 1) {
+    pageTitle = currentPath.substring(1).split('-').join(' ').split('/')[0];
   }
 
   // Action to trigger logout confirmation from the profile dropdown

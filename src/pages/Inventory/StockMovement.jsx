@@ -119,7 +119,6 @@ export default function StockMovement() {
     return type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  // មុខងារសម្រាប់កំណត់ពណ៌តាមប្រភេទ (កើនស្តុកពណ៌បៃតង, ថយស្តុកពណ៌ខៀវ, ខូចខាតពណ៌ក្រហម)
   const getTypeBadgeColor = (type) => {
     if (['purchase', 'transfer_in', 'adjustment_in', 'return_from_customer'].includes(type)) {
       return 'bg-green-100 text-green-700';

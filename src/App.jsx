@@ -11,9 +11,12 @@ import StockManagement from './pages/StockManagement.jsx';
 import StockMovement from './pages/Inventory/StockMovement.jsx';
 import Subscription from './pages/Billing/Subscription.jsx';
 import Users from './pages/Users.jsx';
+
 // Import the newly created POS and Transactions pages
 import POS from './pages/POS/POS.jsx';
 import Transactions from './pages/POS/Transactions.jsx';
+// បន្ថែមការហៅទំព័រ Invoice មកប្រើ
+import InvoiceDetails from './pages/POS/InvoiceDetails.jsx'; 
 
 function App() {
   return (
@@ -35,6 +38,9 @@ function App() {
         {/* Routes for the Sales & POS module */}
         <Route path="/pos" element={<POS />} />
         <Route path="/transactions" element={<Transactions />} />
+        
+        {/* បន្ថែមផ្លូវសម្រាប់ទំព័រ Invoice */}
+        <Route path="/pos/invoice/:id" element={<InvoiceDetails />} />
       </Routes>
     </div>
   );

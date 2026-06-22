@@ -185,8 +185,11 @@ export default function Transactions() {
               {filteredTransactions.length > 0 ? (
                 filteredTransactions.map((item, index) => (
                   <tr key={index} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-bold text-blue-600 whitespace-nowrap cursor-pointer hover:underline">
-                      {item.id}
+                    <td className="px-6 py-4 text-sm font-bold whitespace-nowrap">
+                      {/* Thêm Link នៅទីនេះ ដើម្បីអាចចុចលើ ID បាន */}
+                      <Link to={`/pos/invoice/${item.id}`} className="text-blue-600 hover:underline cursor-pointer">
+                        {item.id}
+                      </Link>
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-slate-600 whitespace-nowrap">
                       {item.date}
@@ -206,9 +209,10 @@ export default function Transactions() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <button className="text-slate-400 hover:text-blue-600 transition-colors p-1" title="View Receipt">
+                      {/* Thêm Link នៅទីនេះ ដើម្បីអាចចុចលើប៊ូតុងភ្នែកបាន */}
+                      <Link to={`/pos/invoice/${item.id}`} className="text-slate-400 hover:text-blue-600 transition-colors p-1 inline-flex" title="View Receipt">
                         <span className="material-symbols-outlined text-[20px]">visibility</span>
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))
