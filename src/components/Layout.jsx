@@ -45,13 +45,32 @@ export default function Layout({ children }) {
     setIsMobileMenuOpen(false);
   };
 
-  // Update: Dynamically format the page title, including the new Invoice Details page
-  let pageTitle = 'Dashboard';
-  if (currentPath.includes('/pos/invoice')) {
-    pageTitle = 'Invoice Details';
-  } else if (currentPath.length > 1) {
-    pageTitle = currentPath.substring(1).split('-').join(' ').split('/')[0];
-  }
+  // FIXED: robust page title mapping instead of string manipulation
+  const getPageTitle = (path) => {
+    if (path.includes('/pos/invoice')) return 'Invoice Details';
+    
+    // Map known routes to specific formatted titles
+    const routeTitles = {
+      '/': 'Dashboard',
+      '/dashboard': 'Dashboard',
+      '/pos': 'Point of Sale',
+      '/transactions': 'Transactions',
+      '/products': 'Products',
+      '/category': 'Categories',
+      '/suppliers': 'Suppliers',
+      '/inventory': 'Stock Management',
+      '/stock-movement': 'Stock Movement',
+      '/users': 'Users & Staff',
+      '/branch': 'Branch Management',
+      '/reports': 'Reports',
+      '/subscription': 'Subscription'
+    };
+
+    // Return the mapped title, or a default fallback
+    return routeTitles[path] || 'SaaSFlow';
+  };
+
+  const pageTitle = getPageTitle(currentPath);
 
   // Action to trigger logout confirmation from the profile dropdown
   const handleSignOutClick = () => {
@@ -153,6 +172,12 @@ export default function Layout({ children }) {
                 <span className="material-symbols-outlined text-[20px]">category</span>
                 <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Categories</span>
               </Link>
+              
+              <Link to="/suppliers" onClick={handleMenuClick} title="Suppliers" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/suppliers') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                <span className="material-symbols-outlined text-[20px]">local_shipping</span>
+                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Suppliers</span>
+              </Link>
+
               <Link to="/inventory" onClick={handleMenuClick} title="Stock Management" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/inventory') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
                 <span className="material-symbols-outlined text-[20px]">warehouse</span>
                 <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Stock Management</span>
@@ -228,7 +253,7 @@ export default function Layout({ children }) {
               >
                 <span className="material-symbols-outlined text-[26px]">menu</span>
               </button>
-              <h2 className="text-[20px] md:text-[22px] font-black text-slate-800 capitalize tracking-tight truncate">
+              <h2 className="text-[20px] md:text-[22px] font-black text-slate-800 tracking-tight truncate">
                 {pageTitle}
               </h2>
             </div>

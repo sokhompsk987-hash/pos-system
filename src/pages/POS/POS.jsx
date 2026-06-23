@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout.jsx';
 import { request } from '../../util/request';
+// IMPORT THE NEW COMPONENT HERE
+import PaymentModal from '../../components/PaymentModal.jsx';
 
 export default function POS() {
   // State for products list and UI interaction
@@ -10,13 +12,10 @@ export default function POS() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   
-  // Modal toggle states
+  // Modal toggle state (Reduced to just one state for the new component)
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showReceiptModal, setShowReceiptModal] = useState(false);
 
-  // Payment process formulation states
-  const [paymentMethod, setPaymentMethod] = useState('Cash');
-  const [amountReceived, setAmountReceived] = useState('');
+  // Payment process formulation states (Kept discount for cart calculation)
   const [discount, setDiscount] = useState(0);
 
   // Fetch product listings when component mounts
@@ -88,7 +87,6 @@ export default function POS() {
   const totalDiscount = (subtotal * (discount / 100));
   const tax = (subtotal - totalDiscount) * 0.1; // Standard 10% VAT calculation
   const totalAmount = subtotal - totalDiscount + tax;
-  const changeDue = amountReceived ? parseFloat(amountReceived) - totalAmount : 0;
 
   // Filter products based on search input and selected category tab
   const filteredProducts = products.filter(p => {
@@ -99,24 +97,14 @@ export default function POS() {
 
   const handleOpenPayment = () => {
     if (cart.length === 0) return alert("Please add items to the cart first.");
-    setAmountReceived(totalAmount.toFixed(2));
     setShowPaymentModal(true);
   };
 
-  const handleCompletePayment = () => {
-    if (parseFloat(amountReceived) < totalAmount) {
-      return alert("Received amount cannot be less than total payable amount.");
-    }
-    setShowPaymentModal(false);
-    setShowReceiptModal(true);
-  };
-
-  const handleClearSale = () => {
+  // This function is passed to the PaymentModal to clear the cart upon success
+  const handlePaymentSuccess = () => {
     setCart([]);
     setDiscount(0);
-    setAmountReceived('');
-    setPaymentMethod('Cash');
-    setShowReceiptModal(false);
+    // In a real app, you would also send the transaction data to the backend here
   };
 
   return (
@@ -161,7 +149,7 @@ export default function POS() {
             </div>
           </div>
 
-          {/* Product Cards Layout - Added 'content-start' to fix vertical stretching */}
+          {/* Product Cards Layout */}
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-1 flex-1 content-start">
             {filteredProducts.map(product => {
               const fallback = getCategoryFallback(product.category);
@@ -273,132 +261,21 @@ export default function POS() {
             <button 
               onClick={handleOpenPayment}
               disabled={cart.length === 0}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-black text-sm py-3 rounded-xl shadow-md shadow-blue-600/10 transition-all mt-2 text-center"
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-black text-sm py-3 rounded-xl shadow-md shadow-blue-600/10 transition-all mt-2 text-center flex items-center justify-center gap-2"
             >
+              <span className="material-symbols-outlined text-[20px]">payments</span>
               Proceed to Payment
             </button>
           </div>
         </div>
 
-        {/* MODAL 1: STEP-IN PAYMENT DIALOG */}
-        {showPaymentModal && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100">
-              <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-                <h3 className="text-base font-black text-slate-800">Finalize Payment</h3>
-                <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 hover:text-slate-600">
-                  <span className="material-symbols-outlined">close</span>
-                </button>
-              </div>
-              <div className="p-6 space-y-5">
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Select Method</label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {['Cash', 'KHQR Scan', 'Card'].map(method => (
-                      <button
-                        key={method}
-                        onClick={() => setPaymentMethod(method)}
-                        className={`py-3 rounded-xl text-xs font-bold border flex flex-col items-center gap-1.5 transition-all ${paymentMethod === method ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}
-                      >
-                        <span className="material-symbols-outlined text-[20px]">
-                          {method === 'Cash' ? 'payments' : method === 'KHQR Scan' ? 'qr_code_2' : 'credit_card'}
-                        </span>
-                        {method}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Amount Payable</label>
-                  <div className="text-2xl font-black text-slate-900 bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-center">
-                    ${totalAmount.toFixed(2)}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Amount Received ($)</label>
-                  <input 
-                    type="number" 
-                    placeholder="0.00"
-                    value={amountReceived}
-                    onChange={(e) => setAmountReceived(e.target.value)}
-                    className="w-full text-center text-xl font-black px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600 transition-all"
-                  />
-                </div>
-                {paymentMethod === 'Cash' && (
-                  <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                    <span className="text-xs font-bold text-slate-500">Change Due:</span>
-                    <span className={`text-base font-black ${changeDue >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                      ${changeDue >= 0 ? changeDue.toFixed(2) : '0.00'}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-                <button onClick={() => setShowPaymentModal(false)} className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-sm py-2.5 rounded-xl transition-all">Cancel</button>
-                <button onClick={handleCompletePayment} className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold text-sm py-2.5 rounded-xl transition-all shadow-sm">Validate Invoice</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* MODAL 2: PRINTABLE CUSTOM RECEIPT SLIP */}
-        {showReceiptModal && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-100">
-              <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-                
-                {/* Print Invoice Header */}
-                <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full text-green-600 mb-2">
-                    <span className="material-symbols-outlined text-[28px]">check_circle</span>
-                  </div>
-                  <h3 className="text-base font-black text-slate-800">Transaction Successful</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Order ID: #INV-2026-0941</p>
-                </div>
-
-                {/* Simulated Slip Content */}
-                <div className="border-t border-b border-dashed border-slate-200 py-3 my-2 text-xs font-medium text-slate-600 space-y-2">
-                  <div className="flex justify-between font-bold text-slate-800">
-                    <span>Items</span>
-                    <span>Subtotal</span>
-                  </div>
-                  {cart.map(item => (
-                    <div key={item.id} className="flex justify-between">
-                      <span>{item.name} (x{item.quantity})</span>
-                      <span>${(item.price * item.quantity).toFixed(2)}</span>
-                    </div>
-                  ))}
-                  <div className="border-t border-slate-100 pt-2 flex justify-between">
-                    <span>Discount ({discount}%)</span>
-                    <span>-${totalDiscount.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>VAT (10%)</span>
-                    <span>${tax.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between font-black text-sm text-slate-900 pt-1">
-                    <span>Total Bill</span>
-                    <span>${totalAmount.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <div className="text-xs text-slate-500 space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                  <div className="flex justify-between"><span>Payment Method:</span><span className="font-bold text-slate-700">{paymentMethod}</span></div>
-                  <div className="flex justify-between"><span>Amount Paid:</span><span className="font-bold text-slate-700">${parseFloat(amountReceived).toFixed(2)}</span></div>
-                  <div className="flex justify-between"><span>Change Given:</span><span className="font-bold text-slate-700">${changeDue > 0 ? changeDue.toFixed(2) : '0.00'}</span></div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-                <button onClick={() => window.print()} className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-sm py-2.5 rounded-xl transition-all flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">print</span>Print Slip
-                </button>
-                <button onClick={handleClearSale} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-2.5 rounded-xl transition-all shadow-sm">New Sale</button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* INJECT THE NEW PAYMENT COMPONENT HERE */}
+        <PaymentModal 
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          totalAmount={totalAmount}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
 
       </div>
     </Layout>
