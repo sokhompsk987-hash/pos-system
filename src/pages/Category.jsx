@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import DataTable from '../components/DataTable';
 import { Link } from 'react-router-dom';
+import Layout from '../components/Layout.jsx'; // Added Layout
+import DataTable from '../components/DataTable';
 import SearchFilter from '../components/SearchFilter';
 import Modal from '../components/Modal';
 import { request } from '../util/request';
@@ -9,8 +10,8 @@ export default function Category() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Added loading state
 
-  // 1. Added form state to capture what the user actually types in the modal
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -21,11 +22,10 @@ export default function Category() {
     fetchCategories();
   }, []);
 
-  // Created a separate function so we can refresh the list after adding a new category
   const fetchCategories = () => {
+    setIsLoading(true);
     request('categories', 'GET')
       .then(response => {
-         // Safely extract the data array
          if (response && response.data && Array.isArray(response.data)) {
              setCategories(response.data);
          } else if (Array.isArray(response)) {
@@ -34,7 +34,11 @@ export default function Category() {
              setCategories([]);
          }
       })
-      .catch(error => console.log("Error fetching categories:", error));
+      .catch(error => {
+        console.log("Error fetching categories:", error);
+        setCategories([]);
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const columns = [
@@ -44,133 +48,68 @@ export default function Category() {
     { header: 'Status', accessor: 'status' }
   ];
 
-  // Handle typing in the input fields
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSaveCategory = (e) => {
     e.preventDefault();
-
-    // 2. We now send the real formData that the user typed, instead of hardcoded text
     request('categories', 'POST', formData)
     .then(result => {
-       if(result && result.errors) {
-           console.log("Errors:", result.errors);
-       } else {
-           console.log("Saved successfully:", result);
-           setIsModalOpen(false); // Close modal
-           
-           // Clear the form for the next time
-           setFormData({ name: '', description: '', status: 'Active' });
-           
-           // Refresh the table automatically
-           fetchCategories();
-       }
+        setIsModalOpen(false);
+        setFormData({ name: '', description: '', status: 'Active' });
+        fetchCategories();
     })
     .catch(error => console.log("Error saving category:", error));
   };
 
-  // 3. Actually filter the data based on the search term before passing it to DataTable
   const filteredCategories = categories.filter(cat => 
     cat?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cat?.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="p-6">
-      
-      {/* Header section with back button and page title */}
-      <div className="flex items-center gap-4 mb-6">
-        {/* Back to Dashboard Button */}
-        <Link 
-          to="/dashboard" 
-          className="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
-          title="Back to Dashboard"
-        >
-          <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
-        </Link>
-        <h1 className="text-2xl font-bold">Category Management</h1>
+    <Layout>
+      <div className="p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Link to="/dashboard" className="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-blue-600 transition-all shadow-sm">
+            <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
+          </Link>
+          <h1 className="text-2xl font-bold">Category Management</h1>
+        </div>
+
+        <div className="flex justify-between items-start mb-6">
+           <div className="w-1/3">
+             <SearchFilter searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Search categories..." />
+           </div>
+           <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm">
+             + Add Category
+           </button>
+        </div>
+
+        {isLoading ? (
+          <div className="p-10 text-center text-gray-500">Loading categories...</div>
+        ) : (
+          <DataTable columns={columns} data={filteredCategories} />
+        )}
+
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Category">
+          <form className="text-gray-700" onSubmit={handleSaveCategory}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Category Name</label>
+              <input required name="name" value={formData.name} onChange={handleInputChange} type="text" className="w-full p-2 border rounded-lg" placeholder="e.g. Toys & Learning" />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <textarea name="description" value={formData.description} onChange={handleInputChange} className="w-full p-2 border rounded-lg" rows="3"></textarea>
+            </div>
+            <div className="mt-6 flex justify-end gap-3 border-t pt-4">
+              <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2">Cancel</button>
+              <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg">Save Category</button>
+            </div>
+          </form>
+        </Modal>
       </div>
-
-      <div className="flex justify-between items-start mb-6">
-         <div className="w-1/3">
-           <SearchFilter 
-             searchTerm={searchTerm} 
-             onSearchChange={setSearchTerm} 
-             placeholder="Search categories..." 
-           />
-         </div>
-         
-         <button 
-           onClick={() => setIsModalOpen(true)} 
-           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm"
-         >
-           + Add Category
-         </button>
-      </div>
-
-      {/* Pass the filtered list here, not the original array */}
-      <DataTable columns={columns} data={filteredCategories} />
-
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Category">
-        <form className="text-gray-700" onSubmit={handleSaveCategory}>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Category Name</label>
-            <input 
-              required
-              name="name" // Matches formData property
-              value={formData.name} // Binds input to state
-              onChange={handleInputChange} 
-              type="text" 
-              className="w-full p-2 border rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-              placeholder="e.g. Toys & Learning" 
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Description</label>
-            <textarea 
-              name="description" 
-              value={formData.description} 
-              onChange={handleInputChange} 
-              className="w-full p-2 border rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-              rows="3" 
-              placeholder="Brief description...">
-            </textarea>
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Status</label>
-            <select 
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className="w-full p-2 border rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-          
-          <div className="mt-6 flex justify-end gap-3 pt-4 border-t">
-             <button 
-               type="button"
-               onClick={() => setIsModalOpen(false)}
-               className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
-             >
-               Cancel
-             </button>
-             <button 
-               type="submit"
-               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
-             >
-               Save Category
-             </button>
-          </div>
-        </form>
-      </Modal>
-    </div>
+    </Layout>
   );
 }

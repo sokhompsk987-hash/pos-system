@@ -61,6 +61,7 @@ export default function Layout({ children }) {
       '/inventory': 'Stock Management',
       '/stock-movement': 'Stock Movement',
       '/users': 'Users & Staff',
+      '/roles': 'User Roles', // Added Roles page title
       '/branch': 'Branch Management',
       '/reports': 'Reports',
       '/subscription': 'Subscription'
@@ -199,6 +200,13 @@ export default function Layout({ children }) {
                 <span className="material-symbols-outlined text-[20px]">group</span>
                 <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Users & Staff</span>
               </Link>
+              
+              {/*  Roles */}
+              <Link to="/roles" onClick={handleMenuClick} title="User Roles" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/roles') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                <span className="material-symbols-outlined text-[20px]">badge</span>
+                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>User Roles</span>
+              </Link>
+
               <Link to="/branch" onClick={handleMenuClick} title="Branches" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/branch') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
                 <span className="material-symbols-outlined text-[20px]">store</span>
                 <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Branches</span>

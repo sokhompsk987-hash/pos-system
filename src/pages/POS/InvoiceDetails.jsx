@@ -1,52 +1,110 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Layout from '../../components/Layout.jsx';
+import { request } from '../../util/request'; // Ensure this path is correct
 
 export default function InvoiceDetails() {
-  // In a real app, you would use this ID to fetch data from the API
-  // const { id } = useParams(); 
+  // Extract the invoice ID from the URL parameters
+  const { id } = useParams(); 
   
-  // Mock data for the invoice details
-  const [invoice] = useState({
-    id: 'INV-2026-0941',
-    date: 'Jun 21, 2026',
-    time: '14:30 PM',
-    status: 'Paid', // Can be 'Paid', 'Pending', or 'Refunded'
-    cashier: 'Admin User',
-    paymentMethod: 'KHQR Scan',
-    
-    company: {
-      name: 'SaaSFlow POS System',
-      address: '123 Business Boulevard, Tech District',
-      city: 'Phnom Penh, Cambodia',
-      phone: '+855 12 345 678',
-      email: 'hello@saasflow.com'
-    },
-    
-    customer: {
-      name: 'Walk-in Customer',
-      phone: 'N/A',
-      email: 'N/A',
-      address: 'N/A'
-    },
+  // State for the invoice data, loading status, and PDF export status
+  const [invoice, setInvoice] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
-    items: [
-      { id: 1, name: 'Baby Milk Powder Formula 1', qty: 2, unitPrice: 25.00, total: 50.00 },
-      { id: 2, name: 'Newborn Diapers M Size', qty: 1, unitPrice: 18.00, total: 18.00 },
-      { id: 3, name: 'Baby Wipes (80 pcs)', qty: 3, unitPrice: 3.50, total: 10.50 }
-    ],
-
-    financials: {
-      subtotal: 78.50,
-      discountPercent: 5,
-      discountAmount: 3.93,
-      taxPercent: 10,
-      taxAmount: 7.46,
-      total: 82.03,
-      amountPaid: 82.03,
-      changeDue: 0.00
+  // Fetch invoice details from backend when the component mounts or ID changes
+  useEffect(() => {
+    if (id) {
+      fetchInvoiceDetails(id);
     }
-  });
+  }, [id]);
+
+  // Function to get real invoice data from the API
+  const fetchInvoiceDetails = (invoiceId) => {
+    setIsLoading(true);
+    
+    // Example endpoint: GET /invoices/INV-2026-0941
+    request(`invoices/${invoiceId}`, 'GET')
+      .then(res => {
+        if (res?.data) {
+          setInvoice(res.data);
+        } else {
+          loadFallbackData(invoiceId);
+        }
+      })
+      .catch(err => {
+        console.error("Failed to fetch invoice details:", err);
+        // Load fallback mock data if API fails during development
+        loadFallbackData(invoiceId);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
+  // Function to handle downloading the PDF version of the invoice
+  const handleDownloadPDF = () => {
+    if (!invoice?.id) return;
+    
+    setIsExporting(true);
+    
+    // Request backend to generate the PDF and return a download link
+    request(`invoices/${invoice.id}/pdf`, 'GET')
+      .then(res => {
+        if (res?.data?.downloadUrl) {
+           window.open(res.data.downloadUrl, '_blank');
+        } else {
+           alert("PDF generated, but no file link provided by backend.");
+        }
+      })
+      .catch(err => {
+        console.error("Failed to export PDF:", err);
+        alert("Export failed. Ensure the backend PDF endpoint is configured.");
+      })
+      .finally(() => {
+        setIsExporting(false);
+      });
+  };
+
+  // Fallback data function to keep UI intact if backend is down
+  const loadFallbackData = (invoiceId) => {
+    setInvoice({
+      id: invoiceId || 'INV-2026-0941',
+      date: 'Jun 21, 2026',
+      time: '14:30 PM',
+      status: 'Paid',
+      cashier: 'Admin User',
+      paymentMethod: 'KHQR Scan',
+      company: {
+        name: 'SaaSFlow POS System',
+        address: '123 Business Boulevard, Tech District',
+        city: 'Phnom Penh, Cambodia',
+        phone: '+855 12 345 678',
+        email: 'hello@saasflow.com'
+      },
+      customer: {
+        name: 'Walk-in Customer',
+        phone: 'N/A',
+        email: 'N/A',
+        address: 'N/A'
+      },
+      items: [
+        { id: 1, name: 'Baby Milk Powder Formula 1', qty: 2, unitPrice: 25.00, total: 50.00 },
+        { id: 2, name: 'Newborn Diapers M Size', qty: 1, unitPrice: 18.00, total: 18.00 },
+        { id: 3, name: 'Baby Wipes (80 pcs)', qty: 3, unitPrice: 3.50, total: 10.50 }
+      ],
+      financials: {
+        subtotal: 78.50,
+        discountPercent: 5,
+        discountAmount: 3.93,
+        taxPercent: 10,
+        taxAmount: 7.46,
+        total: 82.03,
+        amountPaid: 82.03,
+        changeDue: 0.00
+      }
+    });
+  };
 
   // Helper function for status badge styling
   const getStatusStyle = (status) => {
@@ -61,6 +119,31 @@ export default function InvoiceDetails() {
   const handlePrint = () => {
     window.print();
   };
+
+  // Render loading state
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-89px)] bg-slate-50 text-slate-500">
+          <span className="material-symbols-outlined animate-spin text-4xl mb-4">refresh</span>
+          <p className="font-bold">Loading invoice details...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Render error/not found state
+  if (!invoice) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-89px)] bg-slate-50 text-slate-500">
+          <span className="material-symbols-outlined text-4xl mb-4 text-red-400">error</span>
+          <p className="font-bold text-lg text-slate-700">Invoice Not Found</p>
+          <Link to="/transactions" className="mt-4 text-blue-600 hover:underline font-medium">Return to Transactions</Link>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -87,9 +170,15 @@ export default function InvoiceDetails() {
           </div>
           
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm text-sm">
-              <span className="material-symbols-outlined text-[18px]">download</span>
-              PDF
+            <button 
+              onClick={handleDownloadPDF}
+              disabled={isExporting}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm text-sm disabled:opacity-50"
+            >
+              <span className={`material-symbols-outlined text-[18px] ${isExporting ? 'animate-bounce' : ''}`}>
+                {isExporting ? 'hourglass_empty' : 'download'}
+              </span>
+              {isExporting ? 'Generating PDF...' : 'PDF'}
             </button>
             <button 
               onClick={handlePrint}

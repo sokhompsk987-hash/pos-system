@@ -28,6 +28,8 @@ import Reports from './pages/Reports.jsx';
 // IMPORT THE SECURITY ELEMENT FOR GATEKEEPING REVENUE PERMISSIONS
 import FeatureGuard from './components/FeatureGuard.jsx';
 
+import Roles from './pages/Roles.jsx';
+
 function App() {
   return (
     <div className="min-h-screen bg-pos-bg">
@@ -47,7 +49,7 @@ function App() {
         <Route path="/users" element={<FeatureGuard><Users /></FeatureGuard>} />
         <Route path="/inventory" element={<FeatureGuard><StockManagement /></FeatureGuard>} />
         <Route path="/suppliers" element={<FeatureGuard><Suppliers /></FeatureGuard>} />
-        
+        <Route path="/roles" element={<FeatureGuard><Roles /></FeatureGuard>} />
         {/* Route for the Reports module */}
         <Route path="/reports" element={<FeatureGuard><Reports /></FeatureGuard>} />
         

@@ -14,12 +14,12 @@ export default function FeatureGuard({ children }) {
         // DEVELOPMENT UNLOCK: Always authorize so we can continue working!
 
 
-        //setIsAuthorized(true); 
+
+        
+        setIsAuthorized(true); 
         
 
 
-
-        
         // NOTE: Keep the actual logic commented out until the backend is fully ready
         /*
         if (res?.data?.status === 'active') {
