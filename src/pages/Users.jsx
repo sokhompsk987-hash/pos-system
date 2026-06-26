@@ -5,6 +5,7 @@ import Layout from '../components/Layout.jsx';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]); // PRO FIX: Added state to store roles from API
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -26,39 +27,56 @@ export default function Users() {
     full_name: '',
     username: '',
     password: '',
-    role: 'Cashier',
+    role: '', // Will be set dynamically when roles are loaded
     branch: 'Main Warehouse',
     status: 'Active'
   });
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsersAndRoles();
   }, []);
 
-  const fetchUsers = () => {
+  // PRO FIX: Fetch both Users and Roles simultaneously
+  const fetchUsersAndRoles = () => {
     setIsLoading(true);
-    request('users', 'GET')
-      .then(res => {
-        if (res && res.data && Array.isArray(res.data)) {
-          setUsers(res.data);
-        } else {
-          setFallbackUsers(); 
-        }
-      })
-      .catch(err => {
-        console.error("Error fetching users:", err);
-        setFallbackUsers();
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    
+    Promise.all([
+      request('users', 'GET').catch(() => null),
+      request('roles', 'GET').catch(() => null)
+    ])
+    .then(([usersRes, rolesRes]) => {
+      // Handle Roles
+      if (rolesRes && rolesRes.data && Array.isArray(rolesRes.data) && rolesRes.data.length > 0) {
+        setRoles(rolesRes.data);
+        // Update default form data with the first available role
+        setFormData(prev => ({ ...prev, role: rolesRes.data[0].id }));
+      } else {
+        const fallbackRoles = [
+          { id: 'r1', name: 'Admin' },
+          { id: 'r2', name: 'Manager' },
+          { id: 'r3', name: 'Cashier' }
+        ];
+        setRoles(fallbackRoles);
+        setFormData(prev => ({ ...prev, role: fallbackRoles[0].id }));
+      }
+
+      // Handle Users
+      if (usersRes && usersRes.data && Array.isArray(usersRes.data)) {
+        setUsers(usersRes.data);
+      } else {
+        setFallbackUsers(); 
+      }
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
   };
 
   const setFallbackUsers = () => {
     setUsers([
-      { id: 1, full_name: 'Sokhom', username: 'admin_sokhom', role: 'Admin', branch: 'All Branches', status: 'Active' },
-      { id: 2, full_name: 'Thavin', username: 'VinTzin_c1', role: 'Cashier', branch: 'Toul Kork Branch', status: 'Active' },
-      { id: 3, full_name: 'Seyha', username: 'Vuuthy_m', role: 'Manager', branch: 'BKK Branch', status: 'Inactive' }
+      { id: 1, full_name: 'Sokhom', username: 'admin_sokhom', role: 'r1', branch: 'All Branches', status: 'Active' },
+      { id: 2, full_name: 'Thavin', username: 'VinTzin_c1', role: 'r3', branch: 'Toul Kork Branch', status: 'Active' },
+      { id: 3, full_name: 'Seyha', username: 'Vuuthy_m', role: 'r2', branch: 'BKK Branch', status: 'Inactive' }
     ]);
   };
 
@@ -73,13 +91,27 @@ export default function Users() {
     setIsModalOpen(false);
     setEditingUserId(null);
     setFormError('');
-    setFormData({ full_name: '', username: '', password: '', role: 'Cashier', branch: 'Main Warehouse', status: 'Active' });
+    setFormData({ 
+      full_name: '', 
+      username: '', 
+      password: '', 
+      role: roles.length > 0 ? roles[0].id : '', 
+      branch: 'Main Warehouse', 
+      status: 'Active' 
+    });
   };
 
   const handleAddNewClick = () => {
     setEditingUserId(null);
     setFormError('');
-    setFormData({ full_name: '', username: '', password: '', role: 'Cashier', branch: 'Main Warehouse', status: 'Active' });
+    setFormData({ 
+      full_name: '', 
+      username: '', 
+      password: '', 
+      role: roles.length > 0 ? roles[0].id : '', 
+      branch: 'Main Warehouse', 
+      status: 'Active' 
+    });
     setIsModalOpen(true);
   };
 
@@ -106,33 +138,28 @@ export default function Users() {
     e.preventDefault();
     setFormError('');
     
-    // Create a copy of the payload to sanitize before sending
     const payload = { ...formData };
     
     if (editingUserId) {
-      // PRO FIX: If password is empty during edit, do not send it to backend
       if (!payload.password || payload.password.trim() === '') {
         delete payload.password;
       }
 
-      // Send PUT request to update user
       request(`users/${editingUserId}`, 'PUT', payload)
         .then(res => {
-          console.log("User updated:", res);
           closeModal();
-          fetchUsers();
+          // Ideally fetchUsersAndRoles(), but for mock data simplicity:
+          fetchUsersAndRoles();
         })
         .catch(err => {
           console.error("Error updating user:", err);
-          setFormError("Failed to update user. Please check your network or try a different username.");
+          setFormError("Failed to update user. Please check your network.");
         });
     } else {
-      // Send POST request to create new user
       request('users', 'POST', payload)
         .then(res => {
-          console.log("User saved:", res);
           closeModal();
-          fetchUsers();
+          fetchUsersAndRoles();
         })
         .catch(err => {
           console.error("Error saving user:", err);
@@ -146,10 +173,9 @@ export default function Users() {
 
     request(`users/${userToDelete.id}`, 'DELETE')
       .then(res => {
-        console.log("User deleted:", res);
         setIsDeleteModalOpen(false);
         setUserToDelete(null);
-        fetchUsers();
+        fetchUsersAndRoles();
       })
       .catch(err => {
         console.error("Error deleting user:", err);
@@ -157,19 +183,25 @@ export default function Users() {
       });
   };
 
-  const filteredUsers = users.filter(u => 
-    u.full_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.role.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Helper function to get role name from role ID
+  const getRoleName = (roleId) => {
+    const roleObj = roles.find(r => r.id === roleId);
+    return roleObj ? roleObj.name : 'Unknown Role';
+  };
 
-  const getRoleBadgeColor = (role) => {
-    switch (role) {
-      case 'Admin': return 'bg-purple-100 text-purple-700';
-      case 'Manager': return 'bg-blue-100 text-blue-700';
-      case 'Cashier': return 'bg-emerald-100 text-emerald-700';
-      default: return 'bg-slate-100 text-slate-700';
-    }
+  const filteredUsers = users.filter(u => {
+    const roleName = getRoleName(u.role);
+    return u.full_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+           u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           roleName.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  const getRoleBadgeColor = (roleName) => {
+    const name = roleName.toLowerCase();
+    if (name.includes('admin')) return 'bg-purple-100 text-purple-700';
+    if (name.includes('manager')) return 'bg-blue-100 text-blue-700';
+    if (name.includes('cashier')) return 'bg-emerald-100 text-emerald-700';
+    return 'bg-slate-100 text-slate-700';
   };
 
   return (
@@ -192,13 +224,22 @@ export default function Users() {
             </div>
           </div>
           
-          <button 
-            onClick={handleAddNewClick}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all flex items-center gap-2 shrink-0"
-          >
-            <span className="material-symbols-outlined text-sm">person_add</span>
-            Add New Staff
-          </button>
+          <div className="flex gap-3">
+             <Link 
+              to="/roles"
+              className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 shrink-0"
+            >
+              <span className="material-symbols-outlined text-sm">shield_person</span>
+              Manage Roles
+            </Link>
+            <button 
+              onClick={handleAddNewClick}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all flex items-center gap-2 shrink-0"
+            >
+              <span className="material-symbols-outlined text-sm">person_add</span>
+              Add New Staff
+            </button>
+          </div>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
@@ -236,53 +277,56 @@ export default function Users() {
                 </thead>
                 <tbody className="text-sm font-medium text-slate-700">
                   {filteredUsers.length > 0 ? (
-                    filteredUsers.map((user, index) => (
-                      <tr key={user.id || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                        <td className="p-4 pl-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-black border border-slate-200">
-                              {user.full_name.charAt(0).toUpperCase()}
+                    filteredUsers.map((user, index) => {
+                      const roleName = getRoleName(user.role);
+                      return (
+                        <tr key={user.id || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                          <td className="p-4 pl-6">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-black border border-slate-200">
+                                {user.full_name.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <span className="text-slate-900 font-bold block">{user.full_name}</span>
+                                <span className="text-xs text-slate-400">@{user.username}</span>
+                              </div>
                             </div>
-                            <div>
-                              <span className="text-slate-900 font-bold block">{user.full_name}</span>
-                              <span className="text-xs text-slate-400">@{user.username}</span>
+                          </td>
+                          <td className="p-4">
+                            <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${getRoleBadgeColor(roleName)}`}>
+                              {roleName}
+                            </span>
+                          </td>
+                          <td className="p-4 text-slate-600 flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[16px] text-slate-400">storefront</span>
+                            {user.branch}
+                          </td>
+                          <td className="p-4">
+                            <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${user.status === 'Active' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                              {user.status}
+                            </span>
+                          </td>
+                          <td className="p-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <button 
+                                onClick={() => handleEditClick(user)} 
+                                className="text-slate-400 hover:text-blue-600 transition-colors p-1.5 bg-slate-50 hover:bg-blue-50 rounded-lg border border-transparent hover:border-blue-100" 
+                                title="Edit Staff"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">edit</span>
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteClick(user)} 
+                                className="text-slate-400 hover:text-red-600 transition-colors p-1.5 bg-slate-50 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-100" 
+                                title="Delete Staff"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                              </button>
                             </div>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${getRoleBadgeColor(user.role)}`}>
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="p-4 text-slate-600 flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-[16px] text-slate-400">storefront</span>
-                          {user.branch}
-                        </td>
-                        <td className="p-4">
-                          <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${user.status === 'Active' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                            {user.status}
-                          </span>
-                        </td>
-                        <td className="p-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button 
-                              onClick={() => handleEditClick(user)} 
-                              className="text-slate-400 hover:text-blue-600 transition-colors p-1.5 bg-slate-50 hover:bg-blue-50 rounded-lg border border-transparent hover:border-blue-100" 
-                              title="Edit Staff"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">edit</span>
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteClick(user)} 
-                              className="text-slate-400 hover:text-red-600 transition-colors p-1.5 bg-slate-50 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-100" 
-                              title="Delete Staff"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
                       <td colSpan="5" className="p-16 text-center text-slate-400">
@@ -318,7 +362,6 @@ export default function Users() {
                   </button>
                 </div>
                 
-                {/* Error Message Display */}
                 {formError && (
                   <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-600 text-sm font-bold">
                     <span className="material-symbols-outlined text-[18px]">error</span>
@@ -349,10 +392,11 @@ export default function Users() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[12px] font-bold text-slate-700 uppercase tracking-widest">System Role</label>
+                      {/* PRO FIX: Render roles from API instead of hardcoded options */}
                       <select name="role" value={formData.role} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[14px] focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all font-bold text-slate-900">
-                        <option value="Admin">Admin</option>
-                        <option value="Manager">Manager</option>
-                        <option value="Cashier">Cashier</option>
+                        {roles.map(r => (
+                          <option key={r.id} value={r.id}>{r.name}</option>
+                        ))}
                       </select>
                     </div>
                     <div className="space-y-2">
