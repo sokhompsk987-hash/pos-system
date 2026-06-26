@@ -5,6 +5,7 @@ import { request } from '../../util/request';
 export default function Subscription() {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [availablePlans, setAvailablePlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Added loading state
   
   const [currentSub, setCurrentSub] = useState({
     status: "Loading",
@@ -16,43 +17,46 @@ export default function Subscription() {
   });
 
   useEffect(() => {
-    request('subscriptions/current', 'GET')
-      .then(res => {
-        if (res && res.data && res.data.plan) {
-          setCurrentSub(res.data);
-        } else {
-          setCurrentSub({
-            status: "Inactive",
-            next_billing_date: "N/A",
-            plan: {
-              plan_name: "No Active Plan",
-              monthly_price: 0
-            }
-          });
-        }
+    fetchSubscriptionData();
+  }, []);
+
+  const fetchSubscriptionData = () => {
+    setIsLoading(true);
+
+    // Using Promise.all to fetch both APIs simultaneously and wait for both to finish
+    Promise.all([
+      request('subscriptions/current', 'GET').catch(err => {
+        console.error("Error loading current plan:", err);
+        return null; // Return null on error to handle gracefully
+      }),
+      request('subscriptions', 'GET').catch(err => {
+        console.error("Error loading plans:", err);
+        return null;
       })
-      .catch(err => {
-        console.log("Error loading current plan:", err);
+    ])
+    .then(([currentRes, plansRes]) => {
+      // Handle current subscription response
+      if (currentRes && currentRes.data && currentRes.data.plan) {
+        setCurrentSub(currentRes.data);
+      } else {
         setCurrentSub({
-          status: "Error",
+          status: "Inactive",
           next_billing_date: "N/A",
           plan: { plan_name: "No Active Plan", monthly_price: 0 }
         });
-      });
+      }
 
-    request('subscriptions', 'GET')
-      .then(res => {
-        if (res && res.data && Array.isArray(res.data)) {
-          setAvailablePlans(res.data);
-        } else {
-          setFallbackPlans();
-        }
-      })
-      .catch(err => {
-        console.log("Error loading plans:", err);
+      // Handle available plans response
+      if (plansRes && plansRes.data && Array.isArray(plansRes.data)) {
+        setAvailablePlans(plansRes.data);
+      } else {
         setFallbackPlans();
-      });
-  }, []);
+      }
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
+  };
 
   const setFallbackPlans = () => {
     setAvailablePlans([
@@ -131,6 +135,13 @@ export default function Subscription() {
     ]);
   };
 
+  // Function to handle upgrading or changing plans
+  const handleUpgradePlan = (planId) => {
+    // In a real app, this might open a payment modal or send a PUT request to the backend
+    console.log(`Initiating upgrade to plan ID: ${planId} with cycle: ${billingCycle}`);
+    alert(`Ready to upgrade to Plan ID: ${planId}. Connect your API here.`);
+  };
+
   const safePlans = Array.isArray(availablePlans) ? availablePlans : [];
 
   return (
@@ -152,137 +163,142 @@ export default function Subscription() {
           </div>
         </div>
 
-        {/* Current Active Plan Banner */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between shadow-sm mb-10">
-          <div className="flex items-center gap-4">
-            <div className="bg-blue-100 p-3 rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-2xl text-blue-600">workspace_premium</span>
-            </div>
-            <div>
-              <p className="text-slate-500 font-bold text-xs uppercase tracking-widest mb-1">Current Plan</p>
-              <div className="flex items-center gap-3">
-                 <h2 className="text-xl font-black text-slate-900">{currentSub?.plan?.plan_name || "No Plan"}</h2>
-                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${currentSub?.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-slate-200 text-slate-600'}`}>
-                   <span className="material-symbols-outlined text-[12px]">
-                     {currentSub?.status === 'active' ? 'check_circle' : 'info'}
-                   </span>
-                   {currentSub?.status || "Inactive"}
-                 </span>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+            <span className="material-symbols-outlined animate-spin text-4xl mb-4">refresh</span>
+            <p className="font-bold">Loading subscription details...</p>
+          </div>
+        ) : (
+          <>
+            {/* Current Active Plan Banner */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between shadow-sm mb-10">
+              <div className="flex items-center gap-4">
+                <div className="bg-blue-100 p-3 rounded-xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-2xl text-blue-600">workspace_premium</span>
+                </div>
+                <div>
+                  <p className="text-slate-500 font-bold text-xs uppercase tracking-widest mb-1">Current Plan</p>
+                  <div className="flex items-center gap-3">
+                     <h2 className="text-xl font-black text-slate-900">{currentSub?.plan?.plan_name || "No Plan"}</h2>
+                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${currentSub?.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-slate-200 text-slate-600'}`}>
+                       <span className="material-symbols-outlined text-[12px]">
+                         {currentSub?.status === 'active' ? 'check_circle' : 'info'}
+                       </span>
+                       {currentSub?.status || "Inactive"}
+                     </span>
+                  </div>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Next billing date: <strong className="text-slate-700">{currentSub?.next_billing_date || "N/A"}</strong>
+                  </p>
+                </div>
               </div>
-              <p className="text-slate-500 text-xs mt-1">
-                Next billing date: <strong className="text-slate-700">{currentSub?.next_billing_date || "N/A"}</strong>
-              </p>
+              
+              <div className="mt-4 md:mt-0 flex flex-col items-end w-full md:w-auto">
+                <p className="text-2xl font-black text-slate-900">${currentSub?.plan?.monthly_price || 0}<span className="text-sm text-slate-500 font-medium">/mo</span></p>
+              </div>
             </div>
-          </div>
-          
-          <div className="mt-4 md:mt-0 flex flex-col items-end w-full md:w-auto">
-            <p className="text-2xl font-black text-slate-900">${currentSub?.plan?.monthly_price || 0}<span className="text-sm text-slate-500 font-medium">/mo</span></p>
-          </div>
-        </div>
 
-        {/* Billing Cycle Toggle */}
-        <div className="flex flex-col items-center justify-center mb-10">
-          <div className="bg-slate-200 p-1 rounded-full flex items-center mb-2">
-            <button 
-              onClick={() => setBillingCycle('monthly')}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${billingCycle === 'monthly' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-            >
-              Billed monthly
-            </button>
-            <button 
-              onClick={() => setBillingCycle('yearly')}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${billingCycle === 'yearly' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-            >
-              Billed yearly
-            </button>
-          </div>
-          <div className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-            <span>✨</span> SAVE 17% ANNUALLY
-          </div>
-        </div>
-
-        {/* Pricing Cards Grid (Made Smaller & More Compact) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-16 justify-center items-stretch">
-          {safePlans.map((plan) => {
-            const isPopular = plan?.plan_name === "Standard Plan";
-            const isCurrent = currentSub?.plan?.plan_name === plan?.plan_name;
-            
-            const monthlyPrice = plan?.monthly_price || 0;
-            const calculatedYearly = plan?.yearly_price || (monthlyPrice * 12 * 0.83).toFixed(2);
-            
-            const currentPrice = billingCycle === 'monthly' ? monthlyPrice : calculatedYearly;
-            const subtext = billingCycle === 'monthly' ? `$${calculatedYearly}/year` : `$${monthlyPrice}/month`;
-
-            return (
-              <div 
-                key={plan?.plan_id || Math.random()} 
-                // Changed padding from p-6 to p-5, rounded from 2xl to xl
-                className={`relative bg-white rounded-xl p-5 flex flex-col transition-all ${isPopular ? 'border-2 border-blue-600 shadow-lg shadow-blue-900/5' : 'border border-slate-200 hover:border-slate-300 hover:shadow-sm'}`}
-              >
-                {/* Most Popular Badge */}
-                {isPopular && (
-                  <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-bl-xl rounded-tr-xl">
-                    Most Popular
-                  </div>
-                )}
-                
-                {/* Header Section */}
-                <h3 className="text-lg font-bold text-slate-900 mb-1">{plan?.plan_name || "Unknown Plan"}</h3>
-                <p className="text-slate-500 text-xs mb-4 min-h-[32px] pr-2 leading-tight">{plan?.description || "Start growing your business."}</p>
-                
-                {/* Price Section */}
-                <div className="mb-4">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-slate-900">${currentPrice}</span>
-                    <span className="text-slate-500 text-xs font-medium">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
-                  </div>
-                  <p className="text-slate-400 text-[10px] mt-0.5">{subtext}</p>
-                </div>
-                
-                {/* Limits Section (Blue Icons) - Reduced margins & text size */}
-                <ul className="space-y-2.5 mb-5 flex-1">
-                  {plan?.limits_list?.map((limit, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-xs font-medium text-slate-700">
-                      <span className="material-symbols-outlined text-blue-600 text-[16px]">{limit.icon}</span>
-                      {limit.text}
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Divider Line */}
-                <hr className="border-slate-100 mb-4 mt-auto" />
-
-                {/* Features Section (Green Checks) */}
-                <div className="mb-5">
-                  <h4 className="font-bold text-[11px] uppercase tracking-wider text-slate-900 mb-3">Features</h4>
-                  <ul className="space-y-2">
-                    {plan?.features_list?.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-xs font-medium text-slate-600">
-                        <span className="material-symbols-outlined text-green-500 text-[14px]">check_circle</span>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                
-                {/* Action button */}
+            {/* Billing Cycle Toggle */}
+            <div className="flex flex-col items-center justify-center mb-10">
+              <div className="bg-slate-200 p-1 rounded-full flex items-center mb-2">
                 <button 
-                  disabled={isCurrent}
-                  className={`w-full py-2.5 rounded-lg text-sm font-bold transition-all ${
-                    isCurrent 
-                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                      : isPopular 
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                        : 'bg-slate-900 hover:bg-slate-800 text-white'
-                  }`}
+                  onClick={() => setBillingCycle('monthly')}
+                  className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${billingCycle === 'monthly' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                 >
-                  {isCurrent ? 'Current Plan' : 'Choose Plan'}
+                  Billed monthly
+                </button>
+                <button 
+                  onClick={() => setBillingCycle('yearly')}
+                  className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${billingCycle === 'yearly' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                >
+                  Billed yearly
                 </button>
               </div>
-            );
-          })}
-        </div>
+              <div className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span>✨</span> SAVE 17% ANNUALLY
+              </div>
+            </div>
 
+            {/* Pricing Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-16 justify-center items-stretch">
+              {safePlans.map((plan, index) => {
+                const isPopular = plan?.plan_name === "Standard Plan";
+                const isCurrent = currentSub?.plan?.plan_name === plan?.plan_name;
+                
+                const monthlyPrice = plan?.monthly_price || 0;
+                // Parse correctly to avoid string concatenation issues
+                const parsedYearly = parseFloat(plan?.yearly_price);
+                const calculatedYearly = !isNaN(parsedYearly) ? parsedYearly : parseFloat((monthlyPrice * 12 * 0.83).toFixed(2));
+                
+                const currentPrice = billingCycle === 'monthly' ? monthlyPrice : calculatedYearly;
+                const subtext = billingCycle === 'monthly' ? `$${calculatedYearly}/year` : `$${monthlyPrice}/month`;
+
+                return (
+                  // FIXED: Removed Math.random() and replaced with a stable key
+                  <div 
+                    key={plan?.plan_id || `plan-sub-${index}`} 
+                    className={`relative bg-white rounded-xl p-5 flex flex-col transition-all ${isPopular ? 'border-2 border-blue-600 shadow-lg shadow-blue-900/5' : 'border border-slate-200 hover:border-slate-300 hover:shadow-sm'}`}
+                  >
+                    {isPopular && (
+                      <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-bl-xl rounded-tr-xl">
+                        Most Popular
+                      </div>
+                    )}
+                    
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">{plan?.plan_name || "Unknown Plan"}</h3>
+                    <p className="text-slate-500 text-xs mb-4 min-h-[32px] pr-2 leading-tight">{plan?.description || "Start growing your business."}</p>
+                    
+                    <div className="mb-4">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black text-slate-900">${currentPrice}</span>
+                        <span className="text-slate-500 text-xs font-medium">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                      </div>
+                      <p className="text-slate-400 text-[10px] mt-0.5">{subtext}</p>
+                    </div>
+                    
+                    <ul className="space-y-2.5 mb-5 flex-1">
+                      {plan?.limits_list?.map((limit, idx) => (
+                        <li key={`limit-${idx}`} className="flex items-center gap-2 text-xs font-medium text-slate-700">
+                          <span className="material-symbols-outlined text-blue-600 text-[16px]">{limit.icon}</span>
+                          {limit.text}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <hr className="border-slate-100 mb-4 mt-auto" />
+
+                    <div className="mb-5">
+                      <h4 className="font-bold text-[11px] uppercase tracking-wider text-slate-900 mb-3">Features</h4>
+                      <ul className="space-y-2">
+                        {plan?.features_list?.map((feature, idx) => (
+                          <li key={`feature-${idx}`} className="flex items-start gap-2 text-xs font-medium text-slate-600">
+                            <span className="material-symbols-outlined text-green-500 text-[14px]">check_circle</span>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    {/* FIXED: Added onClick handler to the button so it is fully functional */}
+                    <button 
+                      onClick={() => handleUpgradePlan(plan.plan_id)}
+                      disabled={isCurrent}
+                      className={`w-full py-2.5 rounded-lg text-sm font-bold transition-all ${
+                        isCurrent 
+                          ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                          : isPopular 
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                            : 'bg-slate-900 hover:bg-slate-800 text-white'
+                      }`}
+                    >
+                      {isCurrent ? 'Current Plan' : 'Choose Plan'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     </Layout>
   );

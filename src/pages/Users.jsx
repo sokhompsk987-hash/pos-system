@@ -7,6 +7,8 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Tip: In the future, fetch this from an API endpoint like 'branches'
   const [branches, setBranches] = useState(["Main Warehouse", "Toul Kork Branch", "BKK Branch"]);
 
   // Modal States
@@ -16,6 +18,9 @@ export default function Users() {
   // Track which user is being edited or deleted
   const [editingUserId, setEditingUserId] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
+  
+  // Added error state to show feedback to the user if saving fails
+  const [formError, setFormError] = useState('');
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -59,29 +64,32 @@ export default function Users() {
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear error message when user starts typing again
+    if (formError) setFormError('');
   };
 
   // Reset form and close modal
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingUserId(null);
+    setFormError('');
     setFormData({ full_name: '', username: '', password: '', role: 'Cashier', branch: 'Main Warehouse', status: 'Active' });
   };
 
-  // Open modal for adding a new user
   const handleAddNewClick = () => {
     setEditingUserId(null);
+    setFormError('');
     setFormData({ full_name: '', username: '', password: '', role: 'Cashier', branch: 'Main Warehouse', status: 'Active' });
     setIsModalOpen(true);
   };
 
-  // Open modal for editing an existing user
   const handleEditClick = (user) => {
     setEditingUserId(user.id);
+    setFormError('');
     setFormData({
       full_name: user.full_name,
       username: user.username,
-      password: '', // Usually leave blank when editing unless they want to change it
+      password: '', // Leave blank when editing
       role: user.role,
       branch: user.branch,
       status: user.status
@@ -89,7 +97,6 @@ export default function Users() {
     setIsModalOpen(true);
   };
 
-  // Open modal for confirming deletion
   const handleDeleteClick = (user) => {
     setUserToDelete(user);
     setIsDeleteModalOpen(true);
@@ -97,29 +104,43 @@ export default function Users() {
 
   const handleSaveUser = (e) => {
     e.preventDefault();
+    setFormError('');
+    
+    // Create a copy of the payload to sanitize before sending
+    const payload = { ...formData };
     
     if (editingUserId) {
+      // PRO FIX: If password is empty during edit, do not send it to backend
+      if (!payload.password || payload.password.trim() === '') {
+        delete payload.password;
+      }
+
       // Send PUT request to update user
-      request(`users/${editingUserId}`, 'PUT', formData)
+      request(`users/${editingUserId}`, 'PUT', payload)
         .then(res => {
           console.log("User updated:", res);
           closeModal();
           fetchUsers();
         })
-        .catch(err => console.error("Error updating user:", err));
+        .catch(err => {
+          console.error("Error updating user:", err);
+          setFormError("Failed to update user. Please check your network or try a different username.");
+        });
     } else {
       // Send POST request to create new user
-      request('users', 'POST', formData)
+      request('users', 'POST', payload)
         .then(res => {
           console.log("User saved:", res);
           closeModal();
           fetchUsers();
         })
-        .catch(err => console.error("Error saving user:", err));
+        .catch(err => {
+          console.error("Error saving user:", err);
+          setFormError("Failed to create user. The username might already exist.");
+        });
     }
   };
 
-  // Confirm and execute deletion
   const confirmDelete = () => {
     if (!userToDelete) return;
 
@@ -130,7 +151,10 @@ export default function Users() {
         setUserToDelete(null);
         fetchUsers();
       })
-      .catch(err => console.error("Error deleting user:", err));
+      .catch(err => {
+        console.error("Error deleting user:", err);
+        alert("Failed to delete user. Please try again.");
+      });
   };
 
   const filteredUsers = users.filter(u => 
@@ -241,7 +265,6 @@ export default function Users() {
                         </td>
                         <td className="p-4 text-center">
                           <div className="flex items-center justify-center gap-2">
-                            {/* Edit Button */}
                             <button 
                               onClick={() => handleEditClick(user)} 
                               className="text-slate-400 hover:text-blue-600 transition-colors p-1.5 bg-slate-50 hover:bg-blue-50 rounded-lg border border-transparent hover:border-blue-100" 
@@ -249,7 +272,6 @@ export default function Users() {
                             >
                               <span className="material-symbols-outlined text-[18px]">edit</span>
                             </button>
-                            {/* Delete Button */}
                             <button 
                               onClick={() => handleDeleteClick(user)} 
                               className="text-slate-400 hover:text-red-600 transition-colors p-1.5 bg-slate-50 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-100" 
@@ -295,6 +317,14 @@ export default function Users() {
                     <span className="material-symbols-outlined text-[20px]">close</span>
                   </button>
                 </div>
+                
+                {/* Error Message Display */}
+                {formError && (
+                  <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-600 text-sm font-bold">
+                    <span className="material-symbols-outlined text-[18px]">error</span>
+                    {formError}
+                  </div>
+                )}
 
                 <form onSubmit={handleSaveUser} className="space-y-5">
                   

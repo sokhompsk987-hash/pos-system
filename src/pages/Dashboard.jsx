@@ -4,10 +4,8 @@ import Layout from '../components/Layout.jsx';
 import { request } from '../util/request';
 
 export default function Dashboard() {
-  // Added Loading State
   const [isLoading, setIsLoading] = useState(true);
 
-  // States initialized with default empty/zero values
   const [stats, setStats] = useState({
     todaySales: 0,
     totalOrders: 0,
@@ -18,18 +16,15 @@ export default function Dashboard() {
   const [topProducts, setTopProducts] = useState([]);
   const [weeklySales, setWeeklySales] = useState([]);
 
-  // Fetch data when component mounts
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
   const fetchDashboardData = () => {
     setIsLoading(true);
-    // Assuming 'dashboard' is your endpoint for all dashboard metrics
     request('dashboard', 'GET')
       .then(res => {
         if (res && res.data) {
-          // If server provides data, use it; otherwise fallback to defaults
           setStats(res.data.stats || getFallbackStats());
           setRecentTransactions(res.data.recentTransactions || getFallbackTransactions());
           setTopProducts(res.data.topProducts || getFallbackTopProducts());
@@ -40,14 +35,13 @@ export default function Dashboard() {
       })
       .catch(err => {
         console.error("Error fetching dashboard data:", err);
-        setFallbackData(); // Use sample data if network error occurs
+        setFallbackData(); 
       })
       .finally(() => {
         setIsLoading(false);
       });
   };
 
-  // --- Fallback Data Helpers (Your original mock data) ---
   const getFallbackStats = () => ({ todaySales: 1250.00, totalOrders: 45, totalProducts: 124, lowStockItems: 5 });
   
   const getFallbackTransactions = () => [
@@ -85,7 +79,6 @@ export default function Dashboard() {
     <Layout>
       <div className="p-6 md:p-10 font-['Public_Sans'] bg-slate-50 min-h-screen">
         
-        {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">Welcome back, VKTH! 👋</h1>
@@ -99,7 +92,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Loading State Check */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-[60vh] text-slate-500">
             <span className="material-symbols-outlined animate-spin text-4xl mb-4">refresh</span>
@@ -107,10 +99,8 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
-            {/* 4 Summary Metric Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               
-              {/* Sales Card */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
                 <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full blur-2xl"></div>
                 <div className="flex justify-between items-start mb-4">
@@ -128,7 +118,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Orders Card */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
                 <div className="absolute -right-6 -top-6 w-24 h-24 bg-purple-50 rounded-full blur-2xl"></div>
                 <div className="flex justify-between items-start mb-4">
@@ -146,7 +135,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Products Card */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
                 <div className="absolute -right-6 -top-6 w-24 h-24 bg-emerald-50 rounded-full blur-2xl"></div>
                 <div className="flex justify-between items-start mb-4">
@@ -163,7 +151,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Alerts Card */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
                 <div className="absolute -right-6 -top-6 w-24 h-24 bg-red-50 rounded-full blur-2xl"></div>
                 <div className="flex justify-between items-start mb-4">
@@ -182,10 +169,8 @@ export default function Dashboard() {
 
             </div>
 
-            {/* Middle Section: Chart and Top Products */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
               
-              {/* Sales Chart (CSS based) */}
               <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-lg font-black text-slate-900">Weekly Sales Overview</h2>
@@ -196,7 +181,6 @@ export default function Dashboard() {
                 </div>
                 
                 <div className="h-64 flex items-end justify-between gap-2 pt-4 relative">
-                  {/* Background grid lines */}
                   <div className="absolute inset-0 flex flex-col justify-between border-b border-slate-100 pb-8 z-0 pointer-events-none">
                     <div className="border-t border-slate-100 border-dashed w-full"></div>
                     <div className="border-t border-slate-100 border-dashed w-full"></div>
@@ -204,28 +188,23 @@ export default function Dashboard() {
                     <div className="border-t border-slate-100 border-dashed w-full"></div>
                   </div>
                   
-                  {/* Bars */}
                   {weeklySales.map((data, index) => (
                     <div key={index} className="flex flex-col items-center flex-1 z-10 group">
-                      {/* Tooltip on hover */}
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[11px] font-bold py-1 px-2 rounded-md mb-2 pointer-events-none">
                         ${data.amount}
                       </div>
-                      {/* The Bar */}
                       <div className="w-full max-w-[40px] bg-blue-100 rounded-t-lg relative group-hover:bg-blue-200 transition-colors" style={{ height: '200px' }}>
                         <div 
                           className="absolute bottom-0 left-0 right-0 bg-blue-600 rounded-t-lg shadow-sm group-hover:bg-blue-700 transition-all" 
                           style={{ height: data.height }}
                         ></div>
                       </div>
-                      {/* X-Axis Label */}
                       <span className="text-xs font-bold text-slate-500 mt-3">{data.day}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Top Products List */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                 <h2 className="text-lg font-black text-slate-900 mb-6">Top Selling Products</h2>
                 <div className="space-y-5">
@@ -235,14 +214,14 @@ export default function Dashboard() {
                         <span className="text-sm font-bold text-slate-800 truncate pr-4">{product.name}</span>
                         <span className="text-xs font-black text-slate-500">{product.sold} sold</span>
                       </div>
-                      {/* Progress bar */}
                       <div className="w-full bg-slate-100 rounded-full h-2">
                         <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${product.percentage}%` }}></div>
                       </div>
                     </div>
                   ))}
                 </div>
-                <Link to="/products">
+                {/* Fixed Link to point to reports instead of products */}
+                <Link to="/reports">
                   <button className="w-full mt-6 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-sm rounded-xl border border-slate-200 transition-colors">
                     View Full Report
                   </button>
@@ -251,7 +230,6 @@ export default function Dashboard() {
 
             </div>
 
-            {/* Bottom Section: Recent Transactions */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-lg font-black text-slate-900">Recent Transactions</h2>
@@ -272,7 +250,12 @@ export default function Dashboard() {
                   <tbody className="text-sm font-medium text-slate-700">
                     {recentTransactions.map((tx, index) => (
                       <tr key={index} className="border-b border-slate-50 hover:bg-slate-50/50">
-                        <td className="py-3 pr-4 font-bold text-blue-600">{tx.id}</td>
+                        {/* Fixed Invoice ID to be clickable and point to transactions */}
+                        <td className="py-3 pr-4">
+                          <Link to="/transactions" className="font-bold text-blue-600 hover:underline">
+                            {tx.id}
+                          </Link>
+                        </td>
                         <td className="py-3 px-4 text-slate-500">{tx.time}</td>
                         <td className="py-3 px-4 font-bold text-slate-900">{tx.customer}</td>
                         <td className="py-3 px-4 text-right font-black text-slate-900">${tx.total.toFixed(2)}</td>
