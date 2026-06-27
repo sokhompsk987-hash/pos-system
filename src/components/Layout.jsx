@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export default function Layout({ children }) {
@@ -20,6 +20,39 @@ export default function Layout({ children }) {
   // State for dark mode toggle UI (visual only for now)
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  // State for user permissions
+  const [userPermissions, setUserPermissions] = useState(null);
+
+  useEffect(() => {
+    // Load permissions from local storage. 
+    // In a real app, this is set during login based on the user's assigned role.
+    try {
+      const storedPerms = localStorage.getItem('user_permissions');
+      if (storedPerms) {
+        setUserPermissions(JSON.parse(storedPerms));
+      } else {
+        // Fallback: If no permissions are found, grant full access for development purposes
+        setUserPermissions({
+          dashboard: { view: true },
+          pos: { view: true },
+          transactions: { view: true },
+          products: { view: true },
+          stock: { view: true },
+          users: { view: true },
+          reports: { view: true }
+        });
+      }
+    } catch (error) {
+      console.error("Failed to parse user permissions");
+    }
+  }, []);
+
+  // Helper function to check if a user can view a specific module
+  const canAccess = (moduleId) => {
+    if (!userPermissions) return false; // Hide by default if not loaded
+    return userPermissions[moduleId]?.view === true;
+  };
+
   // Ensure currentPath is always a valid string for route matching
   const currentPath = location && location.pathname ? location.pathname : '/';
   
@@ -32,6 +65,7 @@ export default function Layout({ children }) {
   // Function to perform the logout action after user confirmation
   const confirmLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user_permissions'); // Clear permissions on logout
     setShowLogoutConfirm(false);
     navigate('/login');
   };
@@ -61,7 +95,7 @@ export default function Layout({ children }) {
       '/inventory': 'Stock Management',
       '/stock-movement': 'Stock Movement',
       '/users': 'Users & Staff',
-      '/roles': 'User Roles', // Added Roles page title
+      '/roles': 'User Roles',
       '/branch': 'Branch Management',
       '/reports': 'Reports',
       '/subscription': 'Subscription'
@@ -130,93 +164,116 @@ export default function Layout({ children }) {
         {/* Navigation Menu */}
         <nav className="flex-1 py-6 space-y-4 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/40 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/60">
           
-          <div className="px-4">
-            <Link 
-              to="/dashboard" 
-              onClick={handleMenuClick}
-              className={`flex items-center gap-3 py-3 rounded-xl font-bold transition-all ${isActive('/dashboard') ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}
-              title="Dashboard"
-            >
-              <span className="material-symbols-outlined text-[22px]">dashboard</span>
-              <span className={`text-[15px] ${isCollapsed ? 'md:hidden' : ''}`}>Dashboard</span>
-            </Link>
-          </div>
+          {canAccess('dashboard') && (
+            <div className="px-4">
+              <Link 
+                to="/dashboard" 
+                onClick={handleMenuClick}
+                className={`flex items-center gap-3 py-3 rounded-xl font-bold transition-all ${isActive('/dashboard') || isActive('/') ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}
+                title="Dashboard"
+              >
+                <span className="material-symbols-outlined text-[22px]">dashboard</span>
+                <span className={`text-[15px] ${isCollapsed ? 'md:hidden' : ''}`}>Dashboard</span>
+              </Link>
+            </div>
+          )}
 
           {/* Sales & POS Module */}
-          <div>
-            <p className={`px-8 text-[12px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4 ${isCollapsed ? 'md:hidden' : ''}`}>Sales & POS</p>
-            {isCollapsed && <div className="hidden md:block h-8 border-t border-slate-800 mx-4 mt-4 mb-2"></div>}
-            
-            <div className="space-y-1 px-4">
-              <Link to="/pos" onClick={handleMenuClick} title="POS" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/pos') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">point_of_sale</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>POS</span>
-              </Link>
-              <Link to="/transactions" onClick={handleMenuClick} title="Transactions" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/transactions') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">receipt_long</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Transactions</span>
-              </Link>
+          {(canAccess('pos') || canAccess('transactions')) && (
+            <div>
+              <p className={`px-8 text-[12px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4 ${isCollapsed ? 'md:hidden' : ''}`}>Sales & POS</p>
+              {isCollapsed && <div className="hidden md:block h-8 border-t border-slate-800 mx-4 mt-4 mb-2"></div>}
+              
+              <div className="space-y-1 px-4">
+                {canAccess('pos') && (
+                  <Link to="/pos" onClick={handleMenuClick} title="POS" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/pos') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                    <span className="material-symbols-outlined text-[20px]">point_of_sale</span>
+                    <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>POS</span>
+                  </Link>
+                )}
+                {canAccess('transactions') && (
+                  <Link to="/transactions" onClick={handleMenuClick} title="Transactions" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/transactions') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                    <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                    <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Transactions</span>
+                  </Link>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Inventory Module */}
-          <div>
-            <p className={`px-8 text-[12px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4 ${isCollapsed ? 'md:hidden' : ''}`}>Inventory</p>
-            {isCollapsed && <div className="hidden md:block h-8 border-t border-slate-800 mx-4 mt-4 mb-2"></div>}
-            
-            <div className="space-y-1 px-4">
-              <Link to="/products" onClick={handleMenuClick} title="Products" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/products') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">inventory_2</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Products</span>
-              </Link>
-              <Link to="/category" onClick={handleMenuClick} title="Categories" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/category') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">category</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Categories</span>
-              </Link>
+          {(canAccess('products') || canAccess('stock')) && (
+            <div>
+              <p className={`px-8 text-[12px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4 ${isCollapsed ? 'md:hidden' : ''}`}>Inventory</p>
+              {isCollapsed && <div className="hidden md:block h-8 border-t border-slate-800 mx-4 mt-4 mb-2"></div>}
               
-              <Link to="/suppliers" onClick={handleMenuClick} title="Suppliers" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/suppliers') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">local_shipping</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Suppliers</span>
-              </Link>
-
-              <Link to="/inventory" onClick={handleMenuClick} title="Stock Management" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/inventory') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">warehouse</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Stock Management</span>
-              </Link>
-              <Link to="/stock-movement" onClick={handleMenuClick} title="Stock Movement" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/stock-movement') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">sync_alt</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Stock Movement</span>
-              </Link>
+              <div className="space-y-1 px-4">
+                {canAccess('products') && (
+                  <>
+                    <Link to="/products" onClick={handleMenuClick} title="Products" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/products') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                      <span className="material-symbols-outlined text-[20px]">inventory_2</span>
+                      <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Products</span>
+                    </Link>
+                    <Link to="/category" onClick={handleMenuClick} title="Categories" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/category') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                      <span className="material-symbols-outlined text-[20px]">category</span>
+                      <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Categories</span>
+                    </Link>
+                  </>
+                )}
+                
+                {canAccess('stock') && (
+                  <>
+                    <Link to="/suppliers" onClick={handleMenuClick} title="Suppliers" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/suppliers') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                      <span className="material-symbols-outlined text-[20px]">local_shipping</span>
+                      <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Suppliers</span>
+                    </Link>
+                    <Link to="/inventory" onClick={handleMenuClick} title="Stock Management" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/inventory') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                      <span className="material-symbols-outlined text-[20px]">warehouse</span>
+                      <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Stock Management</span>
+                    </Link>
+                    <Link to="/stock-movement" onClick={handleMenuClick} title="Stock Movement" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/stock-movement') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                      <span className="material-symbols-outlined text-[20px]">sync_alt</span>
+                      <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Stock Movement</span>
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Administration Module */}
-          <div>
-            <p className={`px-8 text-[12px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4 ${isCollapsed ? 'md:hidden' : ''}`}>Administration</p>
-            {isCollapsed && <div className="hidden md:block h-8 border-t border-slate-800 mx-4 mt-4 mb-2"></div>}
-            
-            <div className="space-y-1 px-4">
-              <Link to="/users" onClick={handleMenuClick} title="Users & Staff" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/users') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">group</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Users & Staff</span>
-              </Link>
+          {(canAccess('users') || canAccess('reports')) && (
+            <div>
+              <p className={`px-8 text-[12px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-4 ${isCollapsed ? 'md:hidden' : ''}`}>Administration</p>
+              {isCollapsed && <div className="hidden md:block h-8 border-t border-slate-800 mx-4 mt-4 mb-2"></div>}
               
-              {/*  Roles */}
-              <Link to="/roles" onClick={handleMenuClick} title="User Roles" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/roles') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">badge</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>User Roles</span>
-              </Link>
+              <div className="space-y-1 px-4">
+                {canAccess('users') && (
+                  <>
+                    <Link to="/users" onClick={handleMenuClick} title="Users & Staff" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/users') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                      <span className="material-symbols-outlined text-[20px]">group</span>
+                      <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Users & Staff</span>
+                    </Link>
+                    <Link to="/roles" onClick={handleMenuClick} title="User Roles" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/roles') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                      <span className="material-symbols-outlined text-[20px]">badge</span>
+                      <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>User Roles</span>
+                    </Link>
+                    <Link to="/branch" onClick={handleMenuClick} title="Branches" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/branch') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                      <span className="material-symbols-outlined text-[20px]">store</span>
+                      <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Branches</span>
+                    </Link>
+                  </>
+                )}
 
-              <Link to="/branch" onClick={handleMenuClick} title="Branches" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/branch') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">store</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Branches</span>
-              </Link>
-              <Link to="/reports" onClick={handleMenuClick} title="Reports" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/reports') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
-                <span className="material-symbols-outlined text-[20px]">bar_chart</span>
-                <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Reports</span>
-              </Link>
+                {canAccess('reports') && (
+                  <Link to="/reports" onClick={handleMenuClick} title="Reports" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/reports') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
+                    <span className="material-symbols-outlined text-[20px]">bar_chart</span>
+                    <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>Reports</span>
+                  </Link>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* System Settings Module */}
           <div>
@@ -224,6 +281,7 @@ export default function Layout({ children }) {
             {isCollapsed && <div className="hidden md:block h-8 border-t border-slate-800 mx-4 mt-4 mb-2"></div>}
             
             <div className="space-y-1 px-4 mb-4">
+              {/* Subscription is usually available to admins or account owners. Unrestricted here as fallback. */}
               <Link to="/subscription" onClick={handleMenuClick} title="My Subscription" className={`flex items-center gap-3 py-2.5 rounded-xl font-bold transition-all ${isActive('/subscription') ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'} ${isCollapsed ? 'md:justify-center px-2' : 'px-4'}`}>
                 <span className="material-symbols-outlined text-[20px]">card_membership</span>
                 <span className={`text-[14px] ${isCollapsed ? 'md:hidden' : ''}`}>My Subscription</span>
