@@ -4,18 +4,25 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+
   darkMode: "class",
+
   theme: {
     extend: {
       colors: {
-        "primary": "#ec5b13",
-        "background-light": "#f8f6f6",
-        "background-dark": "#221610",
+        primary: "#2563eb", 
+        
+        "background-light": "#f8fafc", 
+        
+        // Background Dark Mode
+        "background-dark": "#0f172a", 
       },
+
       fontFamily: {
-        "display": ["Public Sans", "sans-serif"]
-      }
+        display: ["Public Sans", "sans-serif"],
+      },
     },
   },
+
   plugins: [],
-}
+};
