@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function ProfileDropdown({ isDarkMode, setIsDarkMode, handleSignOutClick }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -6,6 +7,10 @@ export default function ProfileDropdown({ isDarkMode, setIsDarkMode, handleSignO
   const onSignOut = () => {
     setShowProfileMenu(false);
     handleSignOutClick();
+  };
+
+  const closeMenu = () => {
+    setShowProfileMenu(false);
   };
 
   return (
@@ -22,25 +27,26 @@ export default function ProfileDropdown({ isDarkMode, setIsDarkMode, handleSignO
 
       {showProfileMenu && (
         <>
-          <div className="fixed inset-0 z-20" onClick={() => setShowProfileMenu(false)}></div>
-          <div className="absolute right-0 mt-4 w-[280px] bg-white rounded-[24px] shadow-2xl shadow-slate-200/50 border border-slate-100 z-30 overflow-hidden animate-fadeIn pb-2">
+          <div className="fixed inset-0 z-20" onClick={closeMenu}></div>
+          
+          <div className="absolute right-0 mt-4 w-[280px] bg-white rounded-[24px] shadow-2xl border border-slate-100 z-30 overflow-hidden animate-fadeIn pb-2">
             
             <div className="p-2 space-y-1">
-              <button className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors">
+              <Link to="/profile" onClick={closeMenu} className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors">
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[20px] text-slate-400">person</span>
                   <span className="text-[14px] font-bold">View profile</span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-1.5 py-0.5 rounded">⌘P</span>
-              </button>
+              </Link>
               
-              <button className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors">
+              <Link to="/settings" onClick={closeMenu} className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors">
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[20px] text-slate-400">settings</span>
                   <span className="text-[14px] font-bold">Settings</span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-1.5 py-0.5 rounded">⌘S</span>
-              </button>
+              </Link>
 
               <div 
                 className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer" 
@@ -97,6 +103,7 @@ export default function ProfileDropdown({ isDarkMode, setIsDarkMode, handleSignO
                 Sign out
               </button>
             </div>
+
           </div>
         </>
       )}
