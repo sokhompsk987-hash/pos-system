@@ -25,6 +25,7 @@ import FeatureGuard from './components/FeatureGuard.jsx';
 
 import Roles from './pages/Roles.jsx';
 import Profile from './pages/Profile.jsx'; 
+import Settings from './pages/Settings.jsx';
 
 function App() {
   return (
@@ -45,8 +46,9 @@ function App() {
         <Route path="/suppliers" element={<FeatureGuard><Suppliers /></FeatureGuard>} />
         <Route path="/roles" element={<FeatureGuard><Roles /></FeatureGuard>} />
         
-        {/* Profile Route Added Here */}
+        {/* Profile and Settings Routes Added Here */}
         <Route path="/profile" element={<FeatureGuard><Profile /></FeatureGuard>} />
+        <Route path="/settings" element={<FeatureGuard><Settings /></FeatureGuard>} />
         
         <Route path="/reports" element={<FeatureGuard><Reports /></FeatureGuard>} />
         
