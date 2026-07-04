@@ -2,23 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout.jsx';
 import { request } from '../../util/request';
-// IMPORT THE NEW COMPONENT HERE
 import PaymentModal from '../../components/PaymentModal.jsx';
 
 export default function POS() {
-  // State for products list and UI interaction
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  
-  // Modal toggle state (Reduced to just one state for the new component)
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-
-  // Payment process formulation states (Kept discount for cart calculation)
   const [discount, setDiscount] = useState(0);
 
-  // Fetch product listings when component mounts
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -29,7 +22,7 @@ export default function POS() {
         if (res && res.data && Array.isArray(res.data)) {
           setProducts(res.data);
         } else {
-          setFallbackProducts(); // Mock database data for immediate visualization
+          setFallbackProducts();
         }
       })
       .catch(err => {
@@ -39,7 +32,6 @@ export default function POS() {
   };
 
   const setFallbackProducts = () => {
-    // Added mock image URLs to simulated data to test visualization
     setProducts([
       { id: 1, name: 'Baby Milk Powder', price: 25.00, category: 'Milk', code: 'P001', stock: 15, image: '' },
       { id: 2, name: 'Baby Wipes (80 pcs)', price: 3.50, category: 'Wipes', code: 'P002', stock: 42, image: '' },
@@ -50,7 +42,6 @@ export default function POS() {
     ]);
   };
 
-  // Helper function to return fallback icons and background colors based on category
   const getCategoryFallback = (category) => {
     switch (category) {
       case 'Milk': return { icon: 'baby_changing_station', bg: 'bg-blue-50 text-blue-500' };
@@ -62,7 +53,6 @@ export default function POS() {
     }
   };
 
-  // Cart operations: Add, update item quantity, or remove item
   const addToCart = (product) => {
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
@@ -82,13 +72,11 @@ export default function POS() {
     }).filter(item => item.quantity > 0));
   };
 
-  // Dynamic calculations for subtotal, discount, tax, and final amount
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalDiscount = (subtotal * (discount / 100));
-  const tax = (subtotal - totalDiscount) * 0.1; // Standard 10% VAT calculation
+  const tax = (subtotal - totalDiscount) * 0.1;
   const totalAmount = subtotal - totalDiscount + tax;
 
-  // Filter products based on search input and selected category tab
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.code.includes(searchQuery);
     const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
@@ -100,24 +88,22 @@ export default function POS() {
     setShowPaymentModal(true);
   };
 
-  // This function is passed to the PaymentModal to clear the cart upon success
   const handlePaymentSuccess = () => {
     setCart([]);
     setDiscount(0);
-    // In a real app, you would also send the transaction data to the backend here
   };
 
   return (
     <Layout>
-      <div className="flex h-[calc(100vh-89px)] bg-slate-100 font-sans overflow-hidden">
+     
+      <div className="absolute inset-0 flex bg-slate-100 font-sans overflow-hidden">
         
         {/* Left Side: Product Selection Grid */}
-        <div className="flex-1 p-6 overflow-y-auto flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 p-6 overflow-hidden">
           
-          {/* Top Bar: Search and Filters */}
+          {/* Top Bar: Search and Filters (No shrink-0 needed if flex-col is correct) */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6 shrink-0">
             
-            {/* Back to Dashboard Button */}
             <Link 
               to="/dashboard" 
               className="w-[42px] h-[42px] bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
@@ -136,7 +122,9 @@ export default function POS() {
                 className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-600 outline-none transition-all"
               />
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 max-w-full whitespace-nowrap [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full">
+            
+            
+            <div className="flex gap-2 overflow-x-auto pb-1 max-w-full whitespace-nowrap scrollbar-hide">
               {['All', 'Milk', 'Diapers', 'Wipes', 'Bath', 'Accessories'].map(cat => (
                 <button
                   key={cat}
@@ -149,56 +137,58 @@ export default function POS() {
             </div>
           </div>
 
-          {/* Product Cards Layout */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-1 flex-1 content-start">
-            {filteredProducts.map(product => {
-              const fallback = getCategoryFallback(product.category);
-              return (
-                <div 
-                  key={product.id} 
-                  onClick={() => addToCart(product)}
-                  className="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer flex flex-col justify-between group overflow-hidden"
-                >
-                  {/* Product Visual Container (Image or Fallback) */}
-                  <div className="w-full h-32 rounded-xl overflow-hidden mb-3 bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 relative">
-                    {product.image ? (
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className={`w-full h-full flex flex-col items-center justify-center ${fallback.bg} gap-1 group-hover:scale-105 transition-transform duration-300`}>
-                        <span className="material-symbols-outlined text-[32px]">{fallback.icon}</span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">{product.category}</span>
+          {/* ការកែលម្អ UI ទី ៣: អនុញ្ញាតឱ្យផ្នែក Product Cards នេះ Scroll បានដោយសេរី 
+            ដោយមិនអូសទំព័រទាំងមូលទៅជាមួយទេ។
+          */}
+          <div className="flex-1 overflow-y-auto pr-2 pb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 content-start">
+              {filteredProducts.map(product => {
+                const fallback = getCategoryFallback(product.category);
+                return (
+                  <div 
+                    key={product.id} 
+                    onClick={() => addToCart(product)}
+                    className="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer flex flex-col justify-between group overflow-hidden"
+                  >
+                    <div className="w-full h-32 rounded-xl overflow-hidden mb-3 bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 relative">
+                      {product.image ? (
+                        <img 
+                          src={product.image} 
+                          alt={product.name} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className={`w-full h-full flex flex-col items-center justify-center ${fallback.bg} gap-1 group-hover:scale-105 transition-transform duration-300`}>
+                          <span className="material-symbols-outlined text-[32px]">{fallback.icon}</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">{product.category}</span>
+                        </div>
+                      )}
+                      <div className="absolute top-2 left-2 bg-slate-900/60 backdrop-blur-sm text-white font-mono text-[9px] px-1.5 py-0.5 rounded-md">
+                        #{product.code}
                       </div>
-                    )}
-                    <div className="absolute top-2 left-2 bg-slate-900/60 backdrop-blur-sm text-white font-mono text-[9px] px-1.5 py-0.5 rounded-md">
-                      #{product.code}
                     </div>
-                  </div>
 
-                  {/* Product Details */}
-                  <div className="flex-1 flex flex-col justify-between">
-                    <h3 className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[32px]">
-                      {product.name}
-                    </h3>
-                    
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
-                      <span className="text-sm font-black text-slate-900">${product.price.toFixed(2)}</span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${product.stock > 10 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
-                        Qty: {product.stock}
-                      </span>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <h3 className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[32px]">
+                        {product.name}
+                      </h3>
+                      
+                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
+                        <span className="text-sm font-black text-slate-900">${product.price.toFixed(2)}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${product.stock > 10 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                          Qty: {product.stock}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Right Side: Current Checkout Bill (Cart Panel) */}
-        <div className="w-[400px] bg-white border-l border-slate-200 flex flex-col h-full shadow-xl shrink-0">
+        <div className="w-[400px] bg-white border-l border-slate-200 flex flex-col h-full shadow-xl shrink-0 z-10">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
             <h2 className="text-base font-black text-slate-800 flex items-center gap-2">
               <span className="material-symbols-outlined text-blue-600 text-[20px]">shopping_basket</span>
@@ -209,7 +199,6 @@ export default function POS() {
             </span>
           </div>
 
-          {/* Added Items Container */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {cart.length > 0 ? (
               cart.map(item => (
@@ -233,7 +222,6 @@ export default function POS() {
             )}
           </div>
 
-          {/* Bill Pricing Formulations */}
           <div className="p-4 border-t border-slate-100 bg-slate-50/50 space-y-3 shrink-0">
             <div className="flex justify-between text-xs font-bold text-slate-500">
               <span>Subtotal</span>
@@ -269,7 +257,6 @@ export default function POS() {
           </div>
         </div>
 
-        {/* INJECT THE NEW PAYMENT COMPONENT HERE */}
         <PaymentModal 
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}

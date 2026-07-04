@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Layout from '../components/Layout.jsx'; // Added Layout
+import Layout from '../components/Layout.jsx'; 
 import { request } from '../util/request';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true); // Added loading state
+  const [isLoading, setIsLoading] = useState(true); 
   
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -45,7 +45,7 @@ export default function Products() {
         setProducts([]);
       })
       .finally(() => {
-        setIsLoading(false); // Stop loading spinner
+        setIsLoading(false); 
       });
   };
 
@@ -103,10 +103,10 @@ export default function Products() {
     <Layout>
       <div className="p-6 md:p-10 font-['Public_Sans'] bg-slate-50 min-h-screen">
         
-        {/* Header section with Back Button, Title and Add Button */}
+        {/* Header section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full md:w-auto">
             <Link 
               to="/dashboard" 
               className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
@@ -116,14 +116,15 @@ export default function Products() {
             </Link>
 
             <div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">Products List</h1>
-              <p className="text-slate-500 font-medium mt-1">Manage your store inventory, pricing, and images</p>
+              <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Products List</h1>
+              <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Manage your store inventory, pricing, and images</p>
             </div>
           </div>
           
+          {/* Made the add button full width on mobile for easier tapping */}
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all flex items-center gap-2 shrink-0"
+            className="w-full md:w-auto justify-center bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all flex items-center gap-2 shrink-0"
           >
             <span className="material-symbols-outlined text-sm">add</span>
             Add New Product
@@ -155,22 +156,23 @@ export default function Products() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 text-[12px] uppercase tracking-widest font-bold">
-                    <th className="p-4 pl-6">Code</th>
-                    <th className="p-4">Product Name</th>
-                    <th className="p-4">Cost Price</th>
-                    <th className="p-4">Sell Price</th>
-                    <th className="p-4">Stock</th>
+                    {/* Added whitespace-nowrap to headers */}
+                    <th className="p-4 pl-6 whitespace-nowrap">Code</th>
+                    <th className="p-4 whitespace-nowrap">Product Name</th>
+                    <th className="p-4 whitespace-nowrap">Cost Price</th>
+                    <th className="p-4 whitespace-nowrap">Sell Price</th>
+                    <th className="p-4 whitespace-nowrap">Stock</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm font-medium text-slate-700">
                   {filteredProducts.length > 0 ? (
                     filteredProducts.map((product, index) => (
                       <tr key={product?.product_id || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                        <td className="p-4 pl-6 text-slate-400">{product?.product_code || '---'}</td>
-                        <td className="p-4">
+                        <td className="p-4 pl-6 text-slate-400 whitespace-nowrap">{product?.product_code || '---'}</td>
+                        <td className="p-4 whitespace-nowrap">
                           <div 
                             className="flex items-center gap-3 cursor-pointer hover:bg-slate-100 p-2 rounded-lg transition-colors w-fit"
                             onClick={() => handleViewDetails(product)}
@@ -186,9 +188,9 @@ export default function Products() {
                             <span className="text-slate-900 font-bold hover:text-blue-600">{product?.product_name || 'Unknown'}</span>
                           </div>
                         </td>
-                        <td className="p-4 text-slate-500">${product?.cost_price || '0.00'}</td>
-                        <td className="p-4 text-blue-600 font-bold">${product?.base_price || '0.00'}</td>
-                        <td className="p-4">
+                        <td className="p-4 text-slate-500 whitespace-nowrap">${product?.cost_price || '0.00'}</td>
+                        <td className="p-4 text-blue-600 font-bold whitespace-nowrap">${product?.base_price || '0.00'}</td>
+                        <td className="p-4 whitespace-nowrap">
                           <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${product?.stock_quantity > 10 ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
                             {product?.stock_quantity || '0'}
                           </span>
@@ -222,15 +224,16 @@ export default function Products() {
                     <div className="bg-blue-100 p-2 rounded-xl">
                       <span className="material-symbols-outlined text-blue-600">inventory_2</span>
                     </div>
-                    <h2 className="text-2xl font-black text-slate-900">Add New Product</h2>
+                    <h2 className="text-xl md:text-2xl font-black text-slate-900">Add New Product</h2>
                   </div>
-                  <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-colors">
+                  <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-colors shrink-0">
                     <span className="material-symbols-outlined text-[20px]">close</span>
                   </button>
                 </div>
 
                 <form onSubmit={handleSaveProduct} className="space-y-5">
-                  <div className="grid grid-cols-2 gap-5">
+                  {/* Changed to grid-cols-1 md:grid-cols-2 for mobile stacking */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
                       <label className="text-[12px] font-bold text-slate-700 uppercase tracking-widest">Product Name</label>
                       <input required name="product_name" value={formData.product_name} onChange={handleInputChange} type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[14px] focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all font-medium text-slate-900" placeholder="e.g. Galaxy Book 4" />
@@ -241,7 +244,8 @@ export default function Products() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-5">
+                  {/* Changed to grid-cols-1 md:grid-cols-3 for mobile stacking */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div className="space-y-2">
                       <label className="text-[12px] font-bold text-slate-700 uppercase tracking-widest">Cost Price ($)</label>
                       <input required name="cost_price" value={formData.cost_price} onChange={handleInputChange} type="number" step="0.01" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[14px] focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all font-medium text-slate-900" placeholder="1100.00" />
@@ -256,14 +260,16 @@ export default function Products() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-5">
+                  {/* Changed to grid-cols-1 md:grid-cols-2 for mobile stacking */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
                       <label className="text-[12px] font-bold text-slate-700 uppercase tracking-widest">Category ID</label>
                       <input required name="category_id" value={formData.category_id} onChange={handleInputChange} type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[14px] focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all font-medium text-slate-900" placeholder="Paste ID here for now" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[12px] font-bold text-slate-700 uppercase tracking-widest">Product Image</label>
-                      <input onChange={handleImageChange} type="file" accept="image/*" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-[14px] focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all font-medium text-slate-900 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200" />
+                      {/* Added max-w-full to handle long filenames on mobile */}
+                      <input onChange={handleImageChange} type="file" accept="image/*" className="w-full max-w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-[14px] focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all font-medium text-slate-900 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200" />
                     </div>
                   </div>
 
@@ -272,9 +278,9 @@ export default function Products() {
                     <textarea name="description" value={formData.description} onChange={handleInputChange} rows="2" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[14px] focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all font-medium text-slate-900" placeholder="Lightweight Samsung laptop..."></textarea>
                   </div>
 
-                  <div className="pt-6 mt-6 border-t border-slate-100 flex gap-3 justify-end">
-                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-bold transition-colors">Cancel</button>
-                    <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-colors shadow-md shadow-blue-600/20">Upload & Save</button>
+                  <div className="pt-6 mt-6 border-t border-slate-100 flex flex-col md:flex-row gap-3 justify-end">
+                    <button type="button" onClick={() => setIsModalOpen(false)} className="w-full md:w-auto px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-bold transition-colors">Cancel</button>
+                    <button type="submit" className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-colors shadow-md shadow-blue-600/20">Upload & Save</button>
                   </div>
                 </form>
               </div>
@@ -301,13 +307,14 @@ export default function Products() {
                 </button>
               </div>
 
-              <div className="p-6 md:p-8">
+              <div className="p-6 md:p-8 max-h-[50vh] overflow-y-auto">
                 <div className="mb-6">
                   <p className="text-slate-400 font-bold text-sm mb-1">{selectedProduct?.product_code || 'No Code'}</p>
-                  <h2 className="text-2xl font-black text-slate-900">{selectedProduct?.product_name || 'Unknown Product'}</h2>
+                  <h2 className="text-xl md:text-2xl font-black text-slate-900">{selectedProduct?.product_name || 'Unknown Product'}</h2>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                {/* Changed to grid-cols-1 md:grid-cols-2 for mobile stacking */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sell Price</p>
                     <p className="text-xl font-black text-blue-600">${selectedProduct?.base_price || '0.00'}</p>
@@ -318,7 +325,7 @@ export default function Products() {
                       {selectedProduct?.stock_quantity || '0'} Units
                     </p>
                   </div>
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 col-span-2">
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 md:col-span-2">
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Description</p>
                     <p className="text-sm font-medium text-slate-700 leading-relaxed">
                       {selectedProduct?.description || 'No description available for this product.'}

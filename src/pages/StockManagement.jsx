@@ -156,7 +156,7 @@ export default function StockManagement() {
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full md:w-auto">
             <Link to="/dashboard" className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0">
               <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
             </Link>
@@ -166,12 +166,13 @@ export default function StockManagement() {
             </div>
           </div>
           
-          <div className="flex gap-3">
-            <button onClick={() => openModal('transfer')} className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-blue-600 px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-sm">
+          {/* Made buttons full width on small screens and stackable */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <button onClick={() => openModal('transfer')} className="w-full sm:w-auto justify-center bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-blue-600 px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-sm">
               <span className="material-symbols-outlined text-[18px]">sync_alt</span>
               Transfer Stock
             </button>
-            <button onClick={() => openModal('receive')} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+            <button onClick={() => openModal('receive')} className="w-full sm:w-auto justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
               <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
               Receive Stock
             </button>
@@ -179,30 +180,30 @@ export default function StockManagement() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><span className="material-symbols-outlined">inventory_2</span></div>
+            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0"><span className="material-symbols-outlined">inventory_2</span></div>
             <div>
               <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Total Items</p>
               <h3 className="text-2xl font-black text-slate-900">{summary.totalItems}</h3>
             </div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600"><span className="material-symbols-outlined">payments</span></div>
+            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0"><span className="material-symbols-outlined">payments</span></div>
             <div>
               <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Stock Value</p>
               <h3 className="text-2xl font-black text-slate-900">${summary.stockValue.toLocaleString()}</h3>
             </div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 cursor-pointer hover:bg-orange-50/50 transition-colors" onClick={() => setActiveTab('LowStock')}>
-            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-600"><span className="material-symbols-outlined">warning</span></div>
+            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 shrink-0"><span className="material-symbols-outlined">warning</span></div>
             <div>
               <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Low Stock</p>
               <h3 className="text-2xl font-black text-orange-600">{summary.lowStockCount} Items</h3>
             </div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 cursor-pointer hover:bg-red-50/50 transition-colors" onClick={() => setActiveTab('OutOfStock')}>
-            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600"><span className="material-symbols-outlined">error</span></div>
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0"><span className="material-symbols-outlined">error</span></div>
             <div>
               <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Out of Stock</p>
               <h3 className="text-2xl font-black text-red-600">{summary.outOfStockCount} Items</h3>
@@ -233,12 +234,13 @@ export default function StockManagement() {
               <input type="text" placeholder="Search by product name or code..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all font-medium text-slate-900" />
             </div>
             
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm flex items-center gap-2">
+            <div className="bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm flex items-center gap-2 w-full md:w-auto">
               <span className="material-symbols-outlined text-slate-400 text-lg">storefront</span>
-              <select value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value)} className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer">
+              <select value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value)} className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer w-full">
                 <option value="All">All Branches</option>
                 <option value="Toul Kork Branch">Toul Kork Branch</option>
                 <option value="BKK Branch">BKK Branch</option>
+                <option value="Main Warehouse">Main Warehouse</option>
               </select>
             </div>
           </div>
@@ -248,15 +250,17 @@ export default function StockManagement() {
              <div className="flex justify-center p-20"><span className="material-symbols-outlined animate-spin text-4xl text-slate-400">refresh</span></div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              {/* Added min-w-[800px] to ensure table does not squeeze on small screens */}
+              <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
                   <tr className="bg-white border-b border-slate-200 text-slate-400 text-[11px] uppercase tracking-widest font-black">
-                    <th className="p-4 pl-6">Code</th>
-                    <th className="p-4">Product Name</th>
-                    <th className="p-4">Branch</th>
-                    <th className="p-4">Current Stock</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4 text-right pr-6">Actions</th>
+                    {/* Added whitespace-nowrap to all th tags */}
+                    <th className="p-4 pl-6 whitespace-nowrap">Code</th>
+                    <th className="p-4 whitespace-nowrap">Product Name</th>
+                    <th className="p-4 whitespace-nowrap">Branch</th>
+                    <th className="p-4 whitespace-nowrap">Current Stock</th>
+                    <th className="p-4 whitespace-nowrap">Status</th>
+                    <th className="p-4 text-right pr-6 whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm font-medium text-slate-700">
@@ -268,12 +272,13 @@ export default function StockManagement() {
                     
                     return (
                       <tr key={item.id || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
-                        <td className="p-4 pl-6 text-slate-400">{item.product_code}</td>
-                        <td className="p-4 font-bold text-slate-900">{item.product_name}</td>
-                        <td className="p-4 text-slate-500">{item.branch_name}</td>
-                        <td className="p-4"><span className="text-lg font-black text-slate-900">{item.current_stock}</span></td>
-                        <td className="p-4"><span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${statusColor}`}>{statusText}</span></td>
-                        <td className="p-4 text-right pr-6 space-x-2">
+                        {/* Added whitespace-nowrap to td tags where needed */}
+                        <td className="p-4 pl-6 text-slate-400 whitespace-nowrap">{item.product_code}</td>
+                        <td className="p-4 font-bold text-slate-900 whitespace-nowrap">{item.product_name}</td>
+                        <td className="p-4 text-slate-500 whitespace-nowrap">{item.branch_name}</td>
+                        <td className="p-4 whitespace-nowrap"><span className="text-lg font-black text-slate-900">{item.current_stock}</span></td>
+                        <td className="p-4 whitespace-nowrap"><span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${statusColor}`}>{statusText}</span></td>
+                        <td className="p-4 text-right pr-6 space-x-2 whitespace-nowrap">
                           <button onClick={() => openModal('adjust', item)} title="Adjust Stock" className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors">
                             <span className="material-symbols-outlined text-[20px]">edit_square</span>
                           </button>
@@ -299,13 +304,13 @@ export default function StockManagement() {
             <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-md animate-fadeIn overflow-hidden">
               <div className="p-6 md:p-8">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-black text-slate-900 capitalize">
+                  <h2 className="text-xl md:text-2xl font-black text-slate-900 capitalize">
                     {activeModal === 'adjust' && 'Adjust Stock'}
                     {activeModal === 'receive' && 'Receive Stock'}
                     {activeModal === 'transfer' && 'Transfer Stock'}
                     {activeModal === 'reserve' && 'Reserve Stock'}
                   </h2>
-                  <button onClick={() => setActiveModal(null)} className="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-colors"><span className="material-symbols-outlined text-[20px]">close</span></button>
+                  <button onClick={() => setActiveModal(null)} className="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-colors shrink-0"><span className="material-symbols-outlined text-[20px]">close</span></button>
                 </div>
                 
                 {selectedProduct && (
@@ -382,9 +387,10 @@ export default function StockManagement() {
                     <input type="text" value={actionForm.reason} onChange={(e) => setActionForm({...actionForm, reason: e.target.value})} className="w-full bg-slate-50 border rounded-xl px-4 py-3 text-[14px] font-medium outline-none focus:border-blue-500" placeholder="Brief explanation..." />
                   </div>
 
-                  <div className="pt-6 mt-6 border-t flex gap-3 justify-end">
-                    <button type="button" onClick={() => setActiveModal(null)} className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-bold transition-colors">Cancel</button>
-                    <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-colors shadow-lg shadow-blue-600/20">Confirm</button>
+                  {/* Made modal buttons responsive for small screens */}
+                  <div className="pt-6 mt-6 border-t flex flex-col sm:flex-row gap-3 justify-end">
+                    <button type="button" onClick={() => setActiveModal(null)} className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-bold transition-colors">Cancel</button>
+                    <button type="submit" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-colors shadow-lg shadow-blue-600/20">Confirm</button>
                   </div>
                 </form>
               </div>

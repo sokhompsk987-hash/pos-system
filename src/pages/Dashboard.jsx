@@ -84,8 +84,9 @@ export default function Dashboard() {
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">Welcome back, VKTH! 👋</h1>
             <p className="text-slate-500 font-medium mt-1">Here is what's happening with your store today.</p>
           </div>
-          <div className="flex gap-3">
-            <Link to="/pos" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all flex items-center gap-2">
+          <div className="flex gap-3 w-full md:w-auto">
+            {/* Added w-full and justify-center for mobile screens */}
+            <Link to="/pos" className="w-full md:w-auto justify-center bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all flex items-center gap-2">
               <span className="material-symbols-outlined text-sm">point_of_sale</span>
               Open POS
             </Link>
@@ -108,7 +109,7 @@ export default function Dashboard() {
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Today's Sales</p>
                     <h3 className="text-3xl font-black text-slate-900 mt-1">${stats.todaySales.toFixed(2)}</h3>
                   </div>
-                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[20px]">payments</span>
                   </div>
                 </div>
@@ -125,7 +126,7 @@ export default function Dashboard() {
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Orders</p>
                     <h3 className="text-3xl font-black text-slate-900 mt-1">{stats.totalOrders}</h3>
                   </div>
-                  <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
                   </div>
                 </div>
@@ -142,7 +143,7 @@ export default function Dashboard() {
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Products</p>
                     <h3 className="text-3xl font-black text-slate-900 mt-1">{stats.totalProducts}</h3>
                   </div>
-                  <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[20px]">inventory_2</span>
                   </div>
                 </div>
@@ -158,7 +159,7 @@ export default function Dashboard() {
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Low Stock Alerts</p>
                     <h3 className="text-3xl font-black text-red-600 mt-1">{stats.lowStockItems}</h3>
                   </div>
-                  <div className="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[20px]">warning</span>
                   </div>
                 </div>
@@ -180,28 +181,31 @@ export default function Dashboard() {
                   </select>
                 </div>
                 
-                <div className="h-64 flex items-end justify-between gap-2 pt-4 relative">
-                  <div className="absolute inset-0 flex flex-col justify-between border-b border-slate-100 pb-8 z-0 pointer-events-none">
-                    <div className="border-t border-slate-100 border-dashed w-full"></div>
-                    <div className="border-t border-slate-100 border-dashed w-full"></div>
-                    <div className="border-t border-slate-100 border-dashed w-full"></div>
-                    <div className="border-t border-slate-100 border-dashed w-full"></div>
-                  </div>
-                  
-                  {weeklySales.map((data, index) => (
-                    <div key={index} className="flex flex-col items-center flex-1 z-10 group">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[11px] font-bold py-1 px-2 rounded-md mb-2 pointer-events-none">
-                        ${data.amount}
-                      </div>
-                      <div className="w-full max-w-[40px] bg-blue-100 rounded-t-lg relative group-hover:bg-blue-200 transition-colors" style={{ height: '200px' }}>
-                        <div 
-                          className="absolute bottom-0 left-0 right-0 bg-blue-600 rounded-t-lg shadow-sm group-hover:bg-blue-700 transition-all" 
-                          style={{ height: data.height }}
-                        ></div>
-                      </div>
-                      <span className="text-xs font-bold text-slate-500 mt-3">{data.day}</span>
+                {/* Added overflow-x-auto and min-w-max to ensure bars don't squish on small phones */}
+                <div className="w-full overflow-x-auto pb-4">
+                  <div className="h-64 flex items-end justify-between gap-4 pt-4 relative min-w-[500px]">
+                    <div className="absolute inset-0 flex flex-col justify-between border-b border-slate-100 pb-8 z-0 pointer-events-none min-w-[500px]">
+                      <div className="border-t border-slate-100 border-dashed w-full"></div>
+                      <div className="border-t border-slate-100 border-dashed w-full"></div>
+                      <div className="border-t border-slate-100 border-dashed w-full"></div>
+                      <div className="border-t border-slate-100 border-dashed w-full"></div>
                     </div>
-                  ))}
+                    
+                    {weeklySales.map((data, index) => (
+                      <div key={index} className="flex flex-col items-center flex-1 z-10 group">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[11px] font-bold py-1 px-2 rounded-md mb-2 pointer-events-none">
+                          ${data.amount}
+                        </div>
+                        <div className="w-full max-w-[40px] bg-blue-100 rounded-t-lg relative group-hover:bg-blue-200 transition-colors" style={{ height: '200px' }}>
+                          <div 
+                            className="absolute bottom-0 left-0 right-0 bg-blue-600 rounded-t-lg shadow-sm group-hover:bg-blue-700 transition-all" 
+                            style={{ height: data.height }}
+                          ></div>
+                        </div>
+                        <span className="text-xs font-bold text-slate-500 mt-3">{data.day}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -212,7 +216,7 @@ export default function Dashboard() {
                     <div key={index}>
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-sm font-bold text-slate-800 truncate pr-4">{product.name}</span>
-                        <span className="text-xs font-black text-slate-500">{product.sold} sold</span>
+                        <span className="text-xs font-black text-slate-500 whitespace-nowrap">{product.sold} sold</span>
                       </div>
                       <div className="w-full bg-slate-100 rounded-full h-2">
                         <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${product.percentage}%` }}></div>
@@ -220,7 +224,6 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-                {/* Fixed Link to point to reports instead of products */}
                 <Link to="/reports">
                   <button className="w-full mt-6 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-sm rounded-xl border border-slate-200 transition-colors">
                     View Full Report
@@ -237,29 +240,28 @@ export default function Dashboard() {
               </div>
               
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left border-collapse min-w-[600px]">
                   <thead>
                     <tr className="border-b border-slate-100 text-slate-500 text-[12px] uppercase tracking-widest font-bold">
-                      <th className="py-3 pr-4">Invoice ID</th>
-                      <th className="py-3 px-4">Time</th>
-                      <th className="py-3 px-4">Customer</th>
-                      <th className="py-3 px-4 text-right">Amount</th>
-                      <th className="py-3 pl-4 text-center">Status</th>
+                      <th className="py-3 pr-4 whitespace-nowrap">Invoice ID</th>
+                      <th className="py-3 px-4 whitespace-nowrap">Time</th>
+                      <th className="py-3 px-4 whitespace-nowrap">Customer</th>
+                      <th className="py-3 px-4 text-right whitespace-nowrap">Amount</th>
+                      <th className="py-3 pl-4 text-center whitespace-nowrap">Status</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm font-medium text-slate-700">
                     {recentTransactions.map((tx, index) => (
                       <tr key={index} className="border-b border-slate-50 hover:bg-slate-50/50">
-                        {/* Fixed Invoice ID to be clickable and point to transactions */}
-                        <td className="py-3 pr-4">
+                        <td className="py-3 pr-4 whitespace-nowrap">
                           <Link to="/transactions" className="font-bold text-blue-600 hover:underline">
                             {tx.id}
                           </Link>
                         </td>
-                        <td className="py-3 px-4 text-slate-500">{tx.time}</td>
-                        <td className="py-3 px-4 font-bold text-slate-900">{tx.customer}</td>
-                        <td className="py-3 px-4 text-right font-black text-slate-900">${tx.total.toFixed(2)}</td>
-                        <td className="py-3 pl-4 text-center">
+                        <td className="py-3 px-4 text-slate-500 whitespace-nowrap">{tx.time}</td>
+                        <td className="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">{tx.customer}</td>
+                        <td className="py-3 px-4 text-right font-black text-slate-900 whitespace-nowrap">${tx.total.toFixed(2)}</td>
+                        <td className="py-3 pl-4 text-center whitespace-nowrap">
                           <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${
                             tx.status === 'Paid' ? 'bg-green-100 text-green-700' : 
                             tx.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 
