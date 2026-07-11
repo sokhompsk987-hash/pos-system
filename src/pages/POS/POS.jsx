@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'; // Added useRef here
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout.jsx';
 import { request } from '../../util/request';
@@ -11,14 +11,12 @@ export default function POS() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [discount, setDiscount] = useState(0);
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
 
-  // Added a ref to control the search input
   const searchInputRef = useRef(null);
 
   useEffect(() => {
     fetchProducts();
-    // Focus the search input automatically when the POS page loads
-    // This is perfect for barcode scanners!
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
@@ -69,8 +67,6 @@ export default function POS() {
       setCart([...cart, { ...product, quantity: 1 }]);
     }
     
-    // Optional: Focus back to search after adding to cart
-    // so the cashier can immediately scan the next item
     if (searchInputRef.current) {
        searchInputRef.current.focus();
     }
@@ -90,6 +86,7 @@ export default function POS() {
   const totalDiscount = (subtotal * (discount / 100));
   const tax = (subtotal - totalDiscount) * 0.1;
   const totalAmount = subtotal - totalDiscount + tax;
+  const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.code.includes(searchQuery);
@@ -105,7 +102,7 @@ export default function POS() {
   const handlePaymentSuccess = () => {
     setCart([]);
     setDiscount(0);
-    // Focus back on search after payment is done
+    setIsMobileCartOpen(false);
     if (searchInputRef.current) {
        searchInputRef.current.focus();
     }
@@ -113,18 +110,13 @@ export default function POS() {
 
   return (
     <Layout>
-      
       <div className="absolute inset-0 flex bg-slate-100 font-sans overflow-hidden">
         
-        {/* Left Side: Product Selection Grid */}
-        <div className="flex-1 flex flex-col min-w-0 p-6 overflow-hidden">
-          
-          {/* Top Bar: Search and Filters (No shrink-0 needed if flex-col is correct) */}
+        <div className="flex-1 flex flex-col min-w-0 p-4 sm:p-6 overflow-hidden">
           <div className="flex flex-col sm:flex-row gap-4 mb-6 shrink-0">
-            
             <Link 
               to="/dashboard" 
-              className="w-[42px] h-[42px] bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
+              className="hidden sm:flex w-[42px] h-[42px] bg-white border border-slate-200 rounded-xl items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm shrink-0"
               title="Back to Dashboard"
             >
               <span className="material-symbols-outlined text-[20px]">arrow_back_ios_new</span>
@@ -133,7 +125,7 @@ export default function POS() {
             <div className="relative flex-1">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
               <input 
-                ref={searchInputRef} // Linked the ref here
+                ref={searchInputRef}
                 type="text" 
                 placeholder="Search products by name or barcode scan..." 
                 value={searchQuery}
@@ -141,7 +133,6 @@ export default function POS() {
                 className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-600 outline-none transition-all"
               />
             </div>
-            
             
             <div className="flex gap-2 overflow-x-auto pb-1 max-w-full whitespace-nowrap scrollbar-hide">
               {['All', 'Milk', 'Diapers', 'Wipes', 'Bath', 'Accessories'].map(cat => (
@@ -156,7 +147,7 @@ export default function POS() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto pr-2 pb-6">
+          <div className="flex-1 overflow-y-auto pr-2 pb-24 lg:pb-6">
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 content-start">
               {filteredProducts.map(product => {
                 const fallback = getCategoryFallback(product.category);
@@ -166,7 +157,7 @@ export default function POS() {
                     onClick={() => addToCart(product)}
                     className="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer flex flex-col justify-between group overflow-hidden"
                   >
-                    <div className="w-full h-32 rounded-xl overflow-hidden mb-3 bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 relative">
+                    <div className="w-full h-24 sm:h-32 rounded-xl overflow-hidden mb-3 bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 relative">
                       {product.image ? (
                         <img 
                           src={product.image} 
@@ -175,8 +166,8 @@ export default function POS() {
                         />
                       ) : (
                         <div className={`w-full h-full flex flex-col items-center justify-center ${fallback.bg} gap-1 group-hover:scale-105 transition-transform duration-300`}>
-                          <span className="material-symbols-outlined text-[32px]">{fallback.icon}</span>
-                          <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">{product.category}</span>
+                          <span className="material-symbols-outlined text-[24px] sm:text-[32px]">{fallback.icon}</span>
+                          <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider opacity-60">{product.category}</span>
                         </div>
                       )}
                       <div className="absolute top-2 left-2 bg-slate-900/60 backdrop-blur-sm text-white font-mono text-[9px] px-1.5 py-0.5 rounded-md">
@@ -189,9 +180,9 @@ export default function POS() {
                         {product.name}
                       </h3>
                       
-                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-3 pt-2 border-t border-slate-50 gap-1 sm:gap-0">
                         <span className="text-sm font-black text-slate-900">${product.price.toFixed(2)}</span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${product.stock > 10 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                        <span className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full inline-block w-fit ${product.stock > 10 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
                           Qty: {product.stock}
                         </span>
                       </div>
@@ -203,16 +194,32 @@ export default function POS() {
           </div>
         </div>
 
-        {/* Right Side: Current Checkout Bill (Cart Panel) */}
-        <div className="w-[400px] bg-white border-l border-slate-200 flex flex-col h-full shadow-xl shrink-0 z-10">
+        {isMobileCartOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 animate-fadeIn"
+            onClick={() => setIsMobileCartOpen(false)}
+          ></div>
+        )}
+
+        <div className={`
+          fixed inset-y-0 right-0 w-[85%] sm:w-[400px] bg-white flex flex-col shadow-2xl z-40
+          transform transition-transform duration-300 ease-in-out
+          lg:relative lg:translate-x-0 lg:w-[400px] lg:shadow-xl lg:z-10 lg:border-l lg:border-slate-200
+          ${isMobileCartOpen ? 'translate-x-0' : 'translate-x-full'}
+        `}>
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
             <h2 className="text-base font-black text-slate-800 flex items-center gap-2">
               <span className="material-symbols-outlined text-blue-600 text-[20px]">shopping_basket</span>
               Current Order
             </h2>
-            <span className="bg-blue-100 text-blue-700 font-bold text-xs px-2.5 py-1 rounded-full">
-              {cart.reduce((sum, i) => sum + i.quantity, 0)} Items
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="bg-blue-100 text-blue-700 font-bold text-xs px-2.5 py-1 rounded-full">
+                {totalItems} Items
+              </span>
+              <button onClick={() => setIsMobileCartOpen(false)} className="lg:hidden w-8 h-8 flex items-center justify-center bg-slate-200 rounded-full text-slate-600">
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -272,6 +279,18 @@ export default function POS() {
             </button>
           </div>
         </div>
+
+        <button
+          onClick={() => setIsMobileCartOpen(true)}
+          className="lg:hidden fixed bottom-6 right-6 bg-slate-900 text-white rounded-full p-4 shadow-2xl flex items-center justify-center z-20 hover:bg-slate-800 active:scale-95 transition-transform"
+        >
+          <span className="material-symbols-outlined text-[28px]">shopping_basket</span>
+          {totalItems > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-full border-2 border-slate-100 shadow-sm">
+              {totalItems}
+            </span>
+          )}
+        </button>
 
         <PaymentModal 
           isOpen={showPaymentModal}
