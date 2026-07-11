@@ -12,7 +12,7 @@ export default function ProfileDropdown({ isDarkMode, setIsDarkMode, handleSignO
 
   // BACKEND TEAM: Fetch available linked accounts on load
   useEffect(() => {
-    // Backend ត្រូវសរសេរកូដទាញយកពី API ជំនួស (ឧ. GET /api/users/linked-accounts)
+    // Backend 
     const mockFetchedAccounts = [
       { id: 'usr_1', name: 'Admin User', initials: 'AU', isActive: true, color: 'bg-blue-100 text-blue-600' },
       { id: 'usr_2', name: 'Smos', initials: 'SP', isActive: false, color: 'bg-slate-100 text-slate-500' }

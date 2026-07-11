@@ -172,10 +172,12 @@ export default function PaymentModal({ isOpen, onClose, totalAmount, onPaymentSu
                 
                 <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600 font-bold">Change Due</span>
-                    <span className={`text-3xl font-black ${change >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                      ${change >= 0 ? change.toFixed(2) : '0.00'}
-                    </span>
+                    <span className={`font-bold ${change >= 0 ? 'text-slate-600' : 'text-red-500'}`}>
+                        {change >= 0 ? 'Change Due' : 'Remaining'}
+               </span>
+                   <span className={`text-3xl font-black ${change >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                     ${change >= 0 ? change.toFixed(2) : Math.abs(change).toFixed(2)}
+                </span>
                   </div>
                 </div>
               </div>

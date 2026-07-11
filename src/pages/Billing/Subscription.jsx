@@ -5,7 +5,7 @@ import { request } from '../../util/request';
 export default function Subscription() {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [availablePlans, setAvailablePlans] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Added loading state
+  const [isLoading, setIsLoading] = useState(true); 
   
   const [currentSub, setCurrentSub] = useState({
     status: "Loading",
@@ -23,11 +23,10 @@ export default function Subscription() {
   const fetchSubscriptionData = () => {
     setIsLoading(true);
 
-    // Using Promise.all to fetch both APIs simultaneously and wait for both to finish
     Promise.all([
       request('subscriptions/current', 'GET').catch(err => {
         console.error("Error loading current plan:", err);
-        return null; // Return null on error to handle gracefully
+        return null; 
       }),
       request('subscriptions', 'GET').catch(err => {
         console.error("Error loading plans:", err);
@@ -135,9 +134,7 @@ export default function Subscription() {
     ]);
   };
 
-  // Function to handle upgrading or changing plans
   const handleUpgradePlan = (planId) => {
-    // In a real app, this might open a payment modal or send a PUT request to the backend
     console.log(`Initiating upgrade to plan ID: ${planId} with cycle: ${billingCycle}`);
     alert(`Ready to upgrade to Plan ID: ${planId}. Connect your API here.`);
   };
@@ -148,16 +145,16 @@ export default function Subscription() {
     <Layout>
       <div className="p-6 md:p-8 max-w-[1300px] mx-auto font-['Public_Sans'] bg-slate-50 min-h-screen">
         
-        {/* Top Header Navigation */}
-        <div className="flex items-center justify-between mb-8 border-b border-slate-200 pb-4">
+        {/* Top Header Navigation - Made fully responsive for mobile */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 border-b border-slate-200 pb-4 gap-4">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-500">Account</span>
             <span className="text-slate-400">&rsaquo;</span>
             <span className="font-bold text-slate-900 text-lg">My Subscription</span>
           </div>
-          <div className="hidden md:flex items-center gap-6">
-            <button className="text-sm font-medium text-slate-600 hover:text-slate-900">Dashboard</button>
-            <button className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-slate-800 transition-colors">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <button className="text-sm font-medium text-slate-600 hover:text-slate-900 hidden sm:block">Dashboard</button>
+            <button className="w-full sm:w-auto justify-center bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-slate-800 transition-colors">
               <span>+</span> Create New
             </button>
           </div>
@@ -226,7 +223,6 @@ export default function Subscription() {
                 const isCurrent = currentSub?.plan?.plan_name === plan?.plan_name;
                 
                 const monthlyPrice = plan?.monthly_price || 0;
-                // Parse correctly to avoid string concatenation issues
                 const parsedYearly = parseFloat(plan?.yearly_price);
                 const calculatedYearly = !isNaN(parsedYearly) ? parsedYearly : parseFloat((monthlyPrice * 12 * 0.83).toFixed(2));
                 
@@ -234,7 +230,6 @@ export default function Subscription() {
                 const subtext = billingCycle === 'monthly' ? `$${calculatedYearly}/year` : `$${monthlyPrice}/month`;
 
                 return (
-                  // FIXED: Removed Math.random() and replaced with a stable key
                   <div 
                     key={plan?.plan_id || `plan-sub-${index}`} 
                     className={`relative bg-white rounded-xl p-5 flex flex-col transition-all ${isPopular ? 'border-2 border-blue-600 shadow-lg shadow-blue-900/5' : 'border border-slate-200 hover:border-slate-300 hover:shadow-sm'}`}
@@ -279,7 +274,6 @@ export default function Subscription() {
                       </ul>
                     </div>
                     
-                    {/* FIXED: Added onClick handler to the button so it is fully functional */}
                     <button 
                       onClick={() => handleUpgradePlan(plan.plan_id)}
                       disabled={isCurrent}

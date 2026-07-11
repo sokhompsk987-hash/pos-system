@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Added useRef here
 import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout.jsx';
 import { request } from '../../util/request';
@@ -12,8 +12,16 @@ export default function POS() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [discount, setDiscount] = useState(0);
 
+  // Added a ref to control the search input
+  const searchInputRef = useRef(null);
+
   useEffect(() => {
     fetchProducts();
+    // Focus the search input automatically when the POS page loads
+    // This is perfect for barcode scanners!
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
   }, []);
 
   const fetchProducts = () => {
@@ -60,6 +68,12 @@ export default function POS() {
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
     }
+    
+    // Optional: Focus back to search after adding to cart
+    // so the cashier can immediately scan the next item
+    if (searchInputRef.current) {
+       searchInputRef.current.focus();
+    }
   };
 
   const updateQuantity = (id, amount) => {
@@ -91,11 +105,15 @@ export default function POS() {
   const handlePaymentSuccess = () => {
     setCart([]);
     setDiscount(0);
+    // Focus back on search after payment is done
+    if (searchInputRef.current) {
+       searchInputRef.current.focus();
+    }
   };
 
   return (
     <Layout>
-     
+      
       <div className="absolute inset-0 flex bg-slate-100 font-sans overflow-hidden">
         
         {/* Left Side: Product Selection Grid */}
@@ -115,6 +133,7 @@ export default function POS() {
             <div className="relative flex-1">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
               <input 
+                ref={searchInputRef} // Linked the ref here
                 type="text" 
                 placeholder="Search products by name or barcode scan..." 
                 value={searchQuery}
@@ -137,9 +156,6 @@ export default function POS() {
             </div>
           </div>
 
-          {/* ការកែលម្អ UI ទី ៣: អនុញ្ញាតឱ្យផ្នែក Product Cards នេះ Scroll បានដោយសេរី 
-            ដោយមិនអូសទំព័រទាំងមូលទៅជាមួយទេ។
-          */}
           <div className="flex-1 overflow-y-auto pr-2 pb-6">
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 content-start">
               {filteredProducts.map(product => {
