@@ -5,7 +5,7 @@ import { request } from '../util/request';
 export default function Home() {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [plans, setPlans] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Pro Fix: Added loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchPlans();
@@ -110,7 +110,7 @@ export default function Home() {
   const safePlans = Array.isArray(plans) ? plans : [];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-['Public_Sans']">
+    <div className="min-h-screen bg-white font-['Public_Sans']">
       
       <header className="w-full px-8 md:px-16 py-4 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
         <div className="flex items-center gap-3">
@@ -127,54 +127,52 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="px-8 py-16 md:py-24 max-w-7xl mx-auto text-center">
+      <main className="px-8 pt-16 pb-12 max-w-7xl mx-auto text-center">
         <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight mb-6">
           Manage your business with <br className="hidden md:block" />
           <span className="text-blue-600">Confidence</span>
         </h1>
-        <p className="text-base text-slate-500 max-w-2xl mx-auto mb-10 font-medium">
+        <p className="text-base text-slate-500 max-w-2xl mx-auto mb-10 font-medium leading-relaxed">
           The all-in-one POS dashboard for modern businesses. Track sales, manage inventory, and grow your revenue in one place.
         </p>
       </main>
 
-      <section className="px-6 pb-24 max-w-[1300px] mx-auto">
+      <section className="px-6 pb-20 max-w-[1300px] mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-2xl font-black text-slate-900 mb-3">Choose Your Plan</h2>
           <p className="text-slate-500 text-sm font-medium">Simple, transparent pricing that grows with you.</p>
         </div>
 
         <div className="flex flex-col items-center justify-center mb-10">
-          <div className="bg-slate-200 p-1 rounded-full flex items-center mb-2">
+          <div className="bg-slate-100 p-1 rounded-full flex items-center mb-3">
             <button 
               onClick={() => setBillingCycle('monthly')}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${billingCycle === 'monthly' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${billingCycle === 'monthly' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
             >
               Billed monthly
             </button>
             <button 
               onClick={() => setBillingCycle('yearly')}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${billingCycle === 'yearly' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+              className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${billingCycle === 'yearly' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-slate-500 hover:text-slate-900'}`}
             >
               Billed yearly
             </button>
           </div>
-          <div className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+          <div className="bg-blue-50 text-blue-600 text-[11px] font-black tracking-wide px-3 py-1 rounded-full flex items-center gap-1">
             <span>✨</span> SAVE 17% ANNUALLY
           </div>
         </div>
 
-        {/* Loading Spinner */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500">
             <span className="material-symbols-outlined animate-spin text-4xl mb-4">refresh</span>
             <p className="font-bold">Loading plans...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
             {safePlans.map((plan, index) => {
               const isPopular = plan?.plan_name === "Standard Plan";
               const monthlyPrice = plan?.monthly_price || 0;
-              // Ensure consistent number types for prices
               const yearlyPriceNum = parseFloat(plan?.yearly_price);
               const calculatedYearly = !isNaN(yearlyPriceNum) ? yearlyPriceNum : parseFloat((monthlyPrice * 12 * 0.83).toFixed(2));
               
@@ -182,55 +180,51 @@ export default function Home() {
               const subtext = billingCycle === 'monthly' ? `$${calculatedYearly}/year` : `$${monthlyPrice}/month`;
 
               return (
-                /* Pro Fix: Avoid Math.random() in keys. Use plan_id or array index. */
                 <div 
                   key={plan?.plan_id || `plan-${index}`} 
-                  className={`relative bg-white rounded-xl p-5 flex flex-col transition-all ${isPopular ? 'border-2 border-blue-600 shadow-lg shadow-blue-900/5' : 'border border-slate-200 hover:border-slate-300 hover:shadow-sm'}`}
+                  className={`relative bg-white rounded-2xl p-6 flex flex-col transition-all ${isPopular ? 'border-2 border-blue-600 shadow-xl shadow-blue-900/5 scale-105 z-10' : 'border border-slate-200 hover:border-slate-300 hover:shadow-md'}`}
                 >
                   {isPopular && (
-                    <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-bl-xl rounded-tr-xl">
+                    <div className="absolute top-0 right-0 bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-bl-xl rounded-tr-xl">
                       Most Popular
                     </div>
                   )}
                   
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">{plan?.plan_name || "Unknown Plan"}</h3>
-                  <p className="text-slate-500 text-xs mb-4 min-h-[32px] pr-2 leading-tight">{plan?.description || "Start growing your business."}</p>
+                  <h3 className="text-xl font-black text-slate-900 mb-1.5">{plan?.plan_name || "Unknown Plan"}</h3>
+                  <p className="text-slate-500 text-sm mb-6 min-h-[40px] pr-2 leading-relaxed">{plan?.description || "Start growing your business."}</p>
                   
-                  <div className="mb-4">
+                  <div className="mb-6">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-slate-900">${currentPrice}</span>
-                      <span className="text-slate-500 text-xs font-medium">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                      <span className="text-4xl font-black text-slate-900">${currentPrice}</span>
+                      <span className="text-slate-500 text-sm font-bold">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                     </div>
-                    <p className="text-slate-400 text-[10px] mt-0.5">{subtext}</p>
+                    <p className="text-slate-400 text-xs font-medium mt-1">{subtext}</p>
                   </div>
                   
-                  <ul className="space-y-2.5 mb-5 flex-1">
+                  <ul className="space-y-3.5 mb-8 flex-1">
                     {plan?.limits_list?.map((limit, idx) => (
-                      <li key={`limit-${idx}`} className="flex items-center gap-2 text-xs font-medium text-slate-700">
-                        <span className="material-symbols-outlined text-blue-600 text-[16px]">{limit.icon}</span>
+                      <li key={`limit-${idx}`} className="flex items-center gap-3 text-sm font-medium text-slate-700">
+                        <span className="material-symbols-outlined text-blue-600 text-[18px]">{limit.icon}</span>
                         {limit.text}
                       </li>
                     ))}
                   </ul>
 
-                  <hr className="border-slate-100 mb-4 mt-auto" />
-
-                  <div className="mb-5">
-                    <h4 className="font-bold text-[11px] uppercase tracking-wider text-slate-900 mb-3">Features</h4>
-                    <ul className="space-y-2">
+                  <div className="mb-8 border-t border-slate-100 pt-6 mt-auto">
+                    <h4 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-4">Features</h4>
+                    <ul className="space-y-3">
                       {plan?.features_list?.map((feature, idx) => (
-                        <li key={`feat-${idx}`} className="flex items-start gap-2 text-xs font-medium text-slate-600">
-                          <span className="material-symbols-outlined text-green-500 text-[14px]">check_circle</span>
+                        <li key={`feat-${idx}`} className="flex items-start gap-2.5 text-sm font-medium text-slate-600">
+                          <span className="material-symbols-outlined text-emerald-500 text-[18px]">check_circle</span>
                           {feature}
                         </li>
                       ))}
                     </ul>
                   </div>
                   
-                  {/* Pro Fix: Pass plan_id and billing cycle to the register page via URL parameters */}
                   <Link 
                     to={`/register?plan=${plan?.plan_id || ''}&cycle=${billingCycle}`}
-                    className={`w-full block text-center py-2.5 rounded-lg text-sm font-bold transition-all ${isPopular ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
+                    className={`w-full block text-center py-3.5 rounded-xl text-sm font-bold transition-all ${isPopular ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
                   >
                     Choose Plan
                   </Link>
@@ -239,6 +233,123 @@ export default function Home() {
             })}
           </div>
         )}
+      </section>
+
+      <section className="max-w-[1300px] mx-auto px-6 pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-2xl overflow-hidden h-64 md:h-80 shadow-sm border border-slate-100">
+            <img src="/images/gallery-1.jpg" alt="Retail POS" className="w-full h-full object-cover" />
+          </div>
+          <div className="rounded-2xl overflow-hidden h-64 md:h-80 shadow-sm border border-slate-100">
+            <img src="/images/gallery-2.jpg" alt="Customer Checkout" className="w-full h-full object-cover" />
+          </div>
+          <div className="rounded-2xl overflow-hidden h-64 md:h-80 shadow-sm border border-slate-100">
+            <img src="/images/gallery-3.jpg" alt="Managing Store" className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-[1100px] mx-auto px-6 pb-24 space-y-24 md:space-y-32">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+            <img src="/images/feature-pos.jpg" alt="Point of Sale" className="w-full h-auto rounded-xl shadow-sm" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 mb-4">Point of sale</h2>
+            <p className="text-slate-500 font-medium mb-6 leading-relaxed">
+              Transform your smartphone or tablet into an easy-to-use point of sale.
+            </p>
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Issue printed or electronic receipts</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Apply discounts and issue refunds</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Keep recording sales even when offline</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Connect a receipt printer, barcode scanner, and cash drawer</span>
+              </li>
+            </ul>
+            <Link to="/features/pos" className="text-blue-600 font-bold text-sm flex items-center gap-1 hover:text-blue-700 transition-colors">
+              Explore SaaSFlow Point of Sale <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className="order-2 md:order-1">
+            <h2 className="text-3xl font-black text-slate-900 mb-4">Inventory management</h2>
+            <p className="text-slate-500 font-medium mb-6 leading-relaxed">
+              Never run out of stock. Track everything in real-time across multiple locations.
+            </p>
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Track stock levels in real time</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Receive automatic low stock alerts</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Send orders to suppliers and track stock receipts</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Transfer stock between your stores</span>
+              </li>
+            </ul>
+            <Link to="/features/inventory" className="text-blue-600 font-bold text-sm flex items-center gap-1 hover:text-blue-700 transition-colors">
+              Explore inventory management <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </Link>
+          </div>
+          <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 order-1 md:order-2">
+            <img src="/images/feature-stock.jpg" alt="Inventory Management" className="w-full h-auto rounded-xl shadow-sm" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+            <img src="/images/feature-report.jpg" alt="Sales Analytics" className="w-full h-auto rounded-xl shadow-sm" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 mb-4">Sales analytics</h2>
+            <p className="text-slate-500 font-medium mb-6 leading-relaxed">
+              Access your reports from a smartphone, tablet or computer anytime, anywhere.
+            </p>
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">View revenue, average sale and profit</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Track sales trends and react to changes promptly</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Determine best-selling items and categories</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 shrink-0"></div>
+                <span className="text-sm font-medium text-slate-700">Export sales data to spreadsheets</span>
+              </li>
+            </ul>
+            <Link to="/features/analytics" className="text-blue-600 font-bold text-sm flex items-center gap-1 hover:text-blue-700 transition-colors">
+              Explore SaaSFlow Back Office <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </Link>
+          </div>
+        </div>
+
       </section>
     </div>
   );
