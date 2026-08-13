@@ -1,83 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import Layout from '../components/Layout.jsx';
+import React, { useState } from 'react';
+import Layout from '../components/Layout.jsx'; 
+// Import Components
+import SalesReport from '../components/SalesReport';
+import BranchReport from '../components/BranchReport';
+import SystemActivity from '../components/SystemActivity'; 
 
 export default function Reports() {
-  // --- Updated UI States to match Sidebar Menus ---
   const [activeTab, setActiveTab] = useState('Sales Report');
   const tabs = ['Sales Report', 'Inventory Report', 'Branch Report', 'System Activity'];
   
   const [timeFilter, setTimeFilter] = useState('This Month');
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
-
-  const [reportData, setReportData] = useState({
-    kpis: null,
-    trends: [],
-    products: [],
-    dailyReportsList: [],
-    branches: []
-  });
-
-  useEffect(() => {
-    fetchData();
-  }, [timeFilter]);
-
-  const fetchData = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      loadMockData();
-      setIsLoading(false);
-    }, 800);
-  };
 
   const handleExport = async (exportType, fileType) => {
     setIsExporting(true);
     setExportDropdownOpen(false);
-    // ... API Logic (Kept same as before)
+    // ... API Logic សម្រាប់ Export ទៅកាន់ Backend
     setTimeout(() => setIsExporting(false), 1000);
   };
-
-  const loadMockData = () => {
-    // ... Same mock data mapping from previous step
-    setReportData({
-      kpis: {
-        sales_kpis: { total_sales: 12482.50, total_transactions: 156 },
-        profitability_kpis: { total_profit: 4120.00, profit_margin_percent: 90 },
-        invoice_kpis: { pending_amount: 420.15 }, 
-        customer_kpis: { customer_visits: 3845 } 
-      },
-      trends: [
-        { period: '2026-07-25', total_revenue: 4800 },
-        { period: '2026-07-26', total_revenue: 2100 },
-        { period: '2026-07-27', total_revenue: 3800 },
-        { period: '2026-07-28', total_revenue: 4200 },
-        { period: '2026-07-29', total_revenue: 2500 }
-      ],
-      products: [
-        { product_id: "1", product_name: "Little One Baby Wipes", category: "Baby Wet Wipes", total_quantity: 145, total_revenue: 290.00 },
-        { product_id: "2", product_name: "Newborn Diapers M Size", category: "Diapers", total_quantity: 82, total_revenue: 1230.00 },
-      ],
-      dailyReportsList: [
-        { report_id: "1", report_date_formatted: "30 Jul 2026", branch: { branch_name: "Tuol Kork Branch" }, total_sales: 1250.50, transaction_count: 15, gross_profit: 300.00 },
-      ],
-      branches: [
-        { branch_id: "1", branch_name: "Tuol Kork Branch", total_revenue: 12482.50, transaction_count: 156, growth_vs_prev_period: { percent: 100 } },
-        { branch_id: "2", branch_name: "Siem Reap teminal", total_revenue: 8400.00, transaction_count: 98, growth_vs_prev_period: { percent: -2.4 } }
-      ]
-    });
-  };
-
-  const { kpis, trends, products, dailyReportsList, branches } = reportData;
-  const maxChartRevenue = trends.length > 0 ? Math.max(...trends.map(t => t.total_revenue)) : 1;
-
-  const kpiCards = [
-    { title: "Total Sales", value: `$${kpis?.sales_kpis?.total_sales?.toLocaleString() || '0.00'}`, icon: 'payments', iconColor: 'text-green-500', bgIcon: 'bg-green-50', trend: 'Active', isUp: true },
-    { title: "Total Profit", value: `$${kpis?.profitability_kpis?.total_profit?.toLocaleString() || '0.00'}`, icon: 'account_balance_wallet', iconColor: 'text-blue-500', bgIcon: 'bg-blue-50', trend: `${kpis?.profitability_kpis?.profit_margin_percent || 0}%`, isUp: true },
-    { title: "Customer Visits", value: `${kpis?.customer_kpis?.customer_visits?.toLocaleString() || '0'}`, icon: 'groups', iconColor: 'text-amber-500', bgIcon: 'bg-amber-50', trend: 'Active', isUp: true },
-    { title: "Pending Invoices", value: `$${kpis?.invoice_kpis?.pending_amount?.toLocaleString() || '0.00'}`, icon: 'receipt_long', iconColor: 'text-red-500', bgIcon: 'bg-red-50', trend: 'Needs action', isUp: false },
-  ];
 
   return (
     <Layout>
@@ -101,10 +42,35 @@ export default function Reports() {
               <option value="This Week">This Week</option>
               <option value="This Month">This Month</option>
             </select>
-            {/* Export button UI remains unchanged */}
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px]">download</span> Export
-            </button>
+            
+            {/* Export Dropdown Menu */}
+            <div className="relative w-full sm:w-auto">
+              <button 
+                onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                disabled={isExporting}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                <span className={`material-symbols-outlined text-[20px] ${isExporting ? 'animate-bounce' : ''}`}>
+                  {isExporting ? 'hourglass_empty' : 'download'}
+                </span>
+                {isExporting ? 'Exporting...' : 'Export'}
+              </button>
+
+              {exportDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden py-1">
+                  <div className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Download As</div>
+                  <button onClick={() => handleExport('kpi', 'pdf')} className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-3 transition-colors">
+                    <span className="material-symbols-outlined text-red-500 text-[20px]">picture_as_pdf</span> KPI Report (PDF)
+                  </button>
+                  <button onClick={() => handleExport('kpi', 'excel')} className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-3 transition-colors">
+                    <span className="material-symbols-outlined text-green-600 text-[20px]">table_view</span> KPI Report (Excel)
+                  </button>
+                  <button onClick={() => handleExport('top-products', 'excel')} className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-3 transition-colors">
+                    <span className="material-symbols-outlined text-green-600 text-[20px]">table_view</span> Top Products (Excel)
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -125,68 +91,24 @@ export default function Reports() {
           ))}
         </div>
 
-        {/* --- 1. SALES REPORT TAB --- */}
-        {activeTab === 'Sales Report' && (
-          <div className="animate-fade-in flex flex-col gap-8">
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-               {/* Map KPI cards here... (Same as previous code) */}
-            </div>
-
-            {/* Trends and Top Products */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-              {/* Trends Chart (col-span-2) */}
-              <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-slate-900 mb-6">Revenue Overview</h2>
-                {/* Chart code... */}
+        {/* --- Render Content Based on Active Tab --- */}
+        <div className="animate-fade-in">
+          {activeTab === 'Sales Report' && <SalesReport timeFilter={timeFilter} handleExport={handleExport} />}
+          {activeTab === 'Branch Report' && <BranchReport timeFilter={timeFilter} />}
+          
+          {/* Placeholder for Inventory */}
+          {activeTab === 'Inventory Report' && (
+            <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200/60 border-dashed text-center">
+              <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-[32px]">inventory_2</span>
               </div>
-
-              {/* Top Products (col-span-1) */}
-              <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-slate-900 mb-6">Top Products</h2>
-                {/* Top products code... */}
-              </div>
+              <h2 className="text-lg font-bold text-slate-800">Inventory Data Coming Soon</h2>
             </div>
+          )}
 
-            {/* Daily Sales Table included in Sales Report */}
-            <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-900 mb-4">Daily Sales Records</h2>
-              {/* Table code... */}
-            </div>
-          </div>
-        )}
-
-        {/* --- 2. BRANCH REPORT TAB --- */}
-        {activeTab === 'Branch Report' && (
-          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden animate-fade-in">
-             <div className="p-5 border-b border-slate-100">
-               <h2 className="text-lg font-bold text-slate-900">Branch Performance Comparison</h2>
-             </div>
-             {/* Branch comparison table code... */}
-          </div>
-        )}
-
-        {/* --- 3. INVENTORY REPORT TAB (Placeholder) --- */}
-        {activeTab === 'Inventory Report' && (
-          <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200/60 border-dashed animate-fade-in text-center">
-            <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined text-[32px]">inventory_2</span>
-            </div>
-            <h2 className="text-lg font-bold text-slate-800">Inventory Data Coming Soon</h2>
-            <p className="text-slate-500 mt-2 text-sm max-w-md">The backend team is working on providing inventory insights. This module will be available shortly.</p>
-          </div>
-        )}
-
-        {/* --- 4. SYSTEM ACTIVITY TAB (Placeholder) --- */}
-        {activeTab === 'System Activity' && (
-          <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200/60 border-dashed animate-fade-in text-center">
-            <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined text-[32px]">history</span>
-            </div>
-            <h2 className="text-lg font-bold text-slate-800">Activity Logs Coming Soon</h2>
-            <p className="text-slate-500 mt-2 text-sm max-w-md">Track user actions, system updates, and logs here once the backend integration is complete.</p>
-          </div>
-        )}
+          {/* System Activity Component */}
+          {activeTab === 'System Activity' && <SystemActivity />}
+        </div>
 
       </div>
     </Layout>
