@@ -6,7 +6,12 @@ export default function Home() {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [plans, setPlans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // State for managing the Contact Sales popup modal
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [selectedPlanName, setSelectedPlanName] = useState('');
 
+  // Fetch plans on component mount
   useEffect(() => {
     fetchPlans();
   }, []);
@@ -30,6 +35,7 @@ export default function Home() {
       });
   };
 
+  // Fallback mock data if API fails
   const setFallbackPlans = () => {
     setPlans([
       {
@@ -43,10 +49,7 @@ export default function Home() {
           { icon: 'group', text: '3 Users' },
           { icon: 'desktop_windows', text: '1 POS Terminal' }
         ],
-        features_list: [
-          "Basic POS",
-          "Inventory Management"
-        ]
+        features_list: ["Basic POS", "Inventory Management"]
       },
       {
         plan_id: "2",
@@ -60,10 +63,7 @@ export default function Home() {
           { icon: 'desktop_windows', text: '5 POS Terminals' },
           { icon: 'bar_chart', text: 'Analytics Dashboard' }
         ],
-        features_list: [
-          "Sales Reports",
-          "Multi Branch"
-        ]
+        features_list: ["Sales Reports", "Multi Branch"]
       },
       {
         plan_id: "3",
@@ -78,11 +78,7 @@ export default function Home() {
           { icon: 'bar_chart', text: 'Analytics Dashboard' },
           { icon: 'code', text: 'API Access' }
         ],
-        features_list: [
-          "Advanced Reports",
-          "API Access",
-          "Employee Management"
-        ]
+        features_list: ["Advanced Reports", "API Access", "Employee Management"]
       },
       {
         plan_id: "4",
@@ -97,21 +93,101 @@ export default function Home() {
           { icon: 'bar_chart', text: 'Analytics Dashboard' },
           { icon: 'code', text: 'API Access' }
         ],
-        features_list: [
-          "Unlimited Branches",
-          "Custom API",
-          "Priority Support",
-          "Advanced Analytics"
-        ]
+        features_list: ["Unlimited Branches", "Custom API", "Priority Support", "Advanced Analytics"]
       }
     ]);
   };
 
   const safePlans = Array.isArray(plans) ? plans : [];
 
+  // Handler for opening contact modal
+  const handleContactSales = (planName) => {
+    setSelectedPlanName(planName);
+    setIsContactModalOpen(true);
+  };
+
   return (
-    <div className="min-h-screen bg-white font-['Public_Sans']">
+    <div className="min-h-screen bg-white font-['Public_Sans'] relative">
       
+      {/* --- Contact Modal (Pop-up) --- */}
+      {isContactModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-up">
+            {/* Modal Header */}
+            <div className="bg-blue-600 p-6 text-center relative">
+              <button 
+                onClick={() => setIsContactModalOpen(false)}
+                className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-md">
+                <span className="material-symbols-outlined text-white text-3xl">headset_mic</span>
+              </div>
+              <h3 className="text-xl font-black text-white mb-1">Let's setup your POS!</h3>
+              <p className="text-blue-100 text-sm font-medium">
+                Our team will help you configure the <strong className="text-white">{selectedPlanName}</strong> and arrange hardware.
+              </p>
+            </div>
+            
+            {/* Modal Body (Contact Options) */}
+            <div className="p-6 space-y-4">
+              <p className="text-center text-sm font-bold text-slate-500 mb-2 uppercase tracking-wider">Choose a way to contact us</p>
+              
+              {/* Telegram Button */}
+              <a 
+                href="https://t.me/your_telegram_username" 
+                target="_blank" 
+                rel="noreferrer"
+                className="flex items-center gap-4 p-4 rounded-2xl border border-sky-100 bg-sky-50/50 hover:bg-sky-50 transition-colors group"
+              >
+                <div className="w-12 h-12 bg-[#2AABEE] text-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined">send</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900">Message on Telegram</h4>
+                  <p className="text-xs font-medium text-slate-500">Fastest response time (24/7)</p>
+                </div>
+              </a>
+
+              {/* Phone Button */}
+              <a 
+                href="tel:+85512345678" 
+                className="flex items-center gap-4 p-4 rounded-2xl border border-green-100 bg-green-50/50 hover:bg-green-50 transition-colors group"
+              >
+                <div className="w-12 h-12 bg-green-500 text-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined">call</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900">Call Us Directly</h4>
+                  <p className="text-xs font-medium text-slate-500">+855 12 345 678</p>
+                </div>
+              </a>
+
+              {/* Email Button */}
+              <a 
+                href="mailto:sales@saasflow.com?subject=Interested in SaaSFlow POS" 
+                className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-slate-100 transition-colors group"
+              >
+                <div className="w-12 h-12 bg-slate-800 text-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined">mail</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900">Send an Email</h4>
+                  <p className="text-xs font-medium text-slate-500">sales@saasflow.com</p>
+                </div>
+              </a>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 text-center">
+              <p className="text-xs text-slate-400">Our business hours: 8:00 AM - 5:00 PM (Mon-Sat)</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Main Header --- */}
       <header className="w-full px-8 md:px-16 py-4 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
         <div className="flex items-center gap-3">
           <div className="bg-blue-600 p-2 rounded-xl flex items-center justify-center">
@@ -123,10 +199,11 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-4">
           <Link to="/login" className="text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors">Log In</Link>
-          <Link to="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all">Get Started</Link>
+          <button onClick={() => handleContactSales("General Inquiry")} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all">Get Started</button>
         </div>
       </header>
 
+      {/* --- Hero Section --- */}
       <main className="px-8 pt-16 pb-12 max-w-7xl mx-auto text-center">
         <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight mb-6">
           Manage your business with <br className="hidden md:block" />
@@ -137,6 +214,7 @@ export default function Home() {
         </p>
       </main>
 
+      {/* --- Pricing Section --- */}
       <section className="px-6 pb-20 max-w-[1300px] mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-2xl font-black text-slate-900 mb-3">Choose Your Plan</h2>
@@ -222,12 +300,13 @@ export default function Home() {
                     </ul>
                   </div>
                   
-                  <Link 
-                    to={`/register?plan=${plan?.plan_id || ''}&cycle=${billingCycle}`}
-                    className={`w-full block text-center py-3.5 rounded-xl text-sm font-bold transition-all ${isPopular ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
+                  {/* --- Contact Sales Button --- */}
+                  <button 
+                    onClick={() => handleContactSales(plan?.plan_name)}
+                    className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all ${isPopular ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
                   >
-                    Choose Plan
-                  </Link>
+                    Contact Sales
+                  </button>
                 </div>
               );
             })}
@@ -235,6 +314,7 @@ export default function Home() {
         )}
       </section>
 
+      {/* --- Gallery Section --- */}
       <section className="max-w-[1300px] mx-auto px-6 pb-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="rounded-2xl overflow-hidden h-64 md:h-80 shadow-sm border border-slate-100">
@@ -249,8 +329,10 @@ export default function Home() {
         </div>
       </section>
 
+      {/* --- Features Section --- */}
       <section className="max-w-[1100px] mx-auto px-6 pb-24 space-y-24 md:space-y-32">
         
+        {/* Point of sale */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
             <img src="/images/feature-pos.jpg" alt="Point of Sale" className="w-full h-auto rounded-xl shadow-sm" />
@@ -284,6 +366,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Inventory management */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="order-2 md:order-1">
             <h2 className="text-3xl font-black text-slate-900 mb-4">Inventory management</h2>
@@ -317,6 +400,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Sales analytics */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
             <img src="/images/feature-report.jpg" alt="Sales Analytics" className="w-full h-auto rounded-xl shadow-sm" />
@@ -351,6 +435,106 @@ export default function Home() {
         </div>
 
       </section>
+
+      {/* --- SaaS Fat Footer Section --- */}
+      <footer className="bg-[#0b0f19] pt-20 pb-10 border-t border-slate-800">
+        
+        {/* Banner CTA inside Footer */}
+        <div className="max-w-[1100px] mx-auto px-6 mb-20">
+          <div className="bg-gradient-to-r from-blue-900 to-slate-900 rounded-3xl p-10 md:p-12 border border-blue-800/50 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="text-center md:text-left">
+              <h2 className="text-3xl font-black text-white mb-3">Ready to upgrade your store?</h2>
+              <p className="text-blue-100/80 font-medium max-w-md">Join thousands of businesses managing their sales and inventory effortlessly.</p>
+            </div>
+            <button 
+              onClick={() => handleContactSales("General Inquiry")}
+              className="shrink-0 bg-white hover:bg-slate-50 text-blue-900 px-8 py-4 rounded-xl text-base font-black transition-all flex items-center gap-2 shadow-lg"
+            >
+              <span className="material-symbols-outlined">support_agent</span>
+              Talk to Sales Team
+            </button>
+          </div>
+        </div>
+
+        {/* Mega Footer Links */}
+        <div className="max-w-[1300px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
+          
+          {/* Brand Column */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="bg-blue-600 p-1.5 rounded-lg flex items-center justify-center">
+                <span className="material-symbols-outlined text-white text-lg">rocket_launch</span>
+              </div>
+              <span className="text-xl font-black tracking-tight text-white">
+                SaaS<span className="text-blue-500">Flow</span>
+              </span>
+            </div>
+            <p className="text-slate-400 text-sm leading-relaxed max-w-sm mb-8">
+              The modern Point of Sale system built to scale with your business. Powerful analytics, seamless inventory, and unmatched reliability.
+            </p>
+            {/* Social Icons */}
+            <div className="flex items-center gap-4">
+              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-colors">
+                <span className="material-symbols-outlined text-lg">thumb_up</span>
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-colors">
+                <span className="material-symbols-outlined text-lg">smart_display</span>
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-colors">
+                <span className="material-symbols-outlined text-lg">forum</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Product Links */}
+          <div>
+            <h4 className="text-white font-bold text-sm tracking-wider uppercase mb-6">Product</h4>
+            <ul className="space-y-4">
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Point of Sale</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Inventory</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Analytics</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Pricing</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Hardware</Link></li>
+            </ul>
+          </div>
+
+          {/* Resources Links */}
+          <div>
+            <h4 className="text-white font-bold text-sm tracking-wider uppercase mb-6">Resources</h4>
+            <ul className="space-y-4">
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Help Center</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Video Tutorials</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">API Documentation</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors flex items-center gap-2">Blog <span className="bg-slate-800 text-xs px-2 py-0.5 rounded text-slate-300">New</span></Link></li>
+            </ul>
+          </div>
+
+          {/* Company Links */}
+          <div>
+            <h4 className="text-white font-bold text-sm tracking-wider uppercase mb-6">Company</h4>
+            <ul className="space-y-4">
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">About Us</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Careers</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Privacy Policy</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Terms of Service</Link></li>
+              <li><Link to="#" className="text-slate-400 hover:text-white text-sm transition-colors">Contact</Link></li>
+            </ul>
+          </div>
+
+        </div>
+
+        {/* Copyright */}
+        <div className="max-w-[1300px] mx-auto px-6 pt-8 border-t border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-slate-500 text-xs font-medium">© {new Date().getFullYear()} SaaSFlow Inc. All rights reserved.</p>
+          <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
+            <span>Made with <span className="text-red-500">♥</span> in Cambodia</span>
+            <span className="w-1 h-1 bg-slate-700 rounded-full"></span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> System Operational</span>
+          </div>
+        </div>
+
+      </footer>
+
     </div>
   );
 }
